@@ -1,0 +1,54 @@
+/* layout base */
+$formWidth: 608px;
+
+/* font size */
+$fontTitle: 16px;
+
+
+.quick-form__block--center {
+    margin: 0 auto;
+}
+.quick-form__body {
+    width: $formWidth;
+    @extend .quick-form__block--center
+}
+.quick-form__body_title {
+    font-size: $fontTitle;
+    font-weight: 600;
+}
+
+/* layout css */
+.quick-form__layout_mt--42 {
+    margin-top: 42px;
+}
+.quick-form__layout_mb--30 {
+    margin-bottom: 30px;
+}
+.quick-form__footer {
+    text-align: center;
+}
+.quick-form__imglist--item {
+    position: relative;
+}
+.quick-form__imglist--itemModal {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    background: rgba(0,0,0,.5);
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    justify-items: center;
+}
+.quick-form__imglist--itemwarp {
+    position: relative;
+    margin-right: 10px;
+    display: inline-block;
+}
+.quick-form__imglist--itemwarp:hover .quick-form__imglist--itemModal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-evenly;
+    cursor: pointer;
+}

@@ -1,0 +1,18 @@
+.quick-form__upload--detail .el-upload  {
+    display: none;
+}
+.quick-form__upload--detail .el-upload-list__item-status-label {
+    display: none;
+}
+.quick-form__upload--detail .el-icon--close {
+    display: none !important;
+}
+.quick-form__upload--detail .el-upload-list__item .el-upload-list__item-info {
+    width: 100%;
+}
+.quick-form__upload--detail .el-upload-list {
+    margin-top: 0;
+}
+.quick-form__upload--detail .el-upload-list__item-status-label {
+    display: none !important;
+}
