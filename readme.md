@@ -15,7 +15,7 @@ npm install quick-form
 
 ```
 
-##### Certified components
+## Certified components
 
 ```
 import { createApp } from 'vue'
@@ -24,27 +24,6 @@ import "element-plus/dist/index.css";
 import "../lib/quickFromInsideSty.scss";
 import "../lib/quickFromOutsideSty.scss";
 createApp(App).use(ElementPlus).use(QuickFrom).mount('#app')
-```
-
-```
-
-import { createApp } from 'vue'
-  import App from './App.vue'
-  import router from './router'
-  import ElementPlus from 'element-plus'
-  import Authories from "./util/authories"
-  import QuickFrom from '@/components/quick-form/index' //引入文件
- 
-  createApp(App)
-    .use(ElementPlus)
-    .use(QuickFrom) // 注册组件
-    .use(Authories({
-      post,
-      get
-    }, (App) => {
-      App.use(router)
-      App.mount('#app')
-    }, router));
 ```
 
 ## Introduce Type 介绍
