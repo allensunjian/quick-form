@@ -5,6 +5,7 @@
 ##### --- for Vue 3.2.x and Element-Plus
 
 ##### 动态表单快速构建工具 基于 vue 3.2.x 和 Element-plus
+#### demo: https://allensunjian.github.io/quick-form-example/
 
 #### demo: https://allensunjian.github.io/quick-form-example/
 
