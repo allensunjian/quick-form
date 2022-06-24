@@ -1,8 +1,20 @@
 import { defineComponent, reactive } from "vue";
 import MonacoEditor from "./components/MonacoEditor";
 import CodeParser from "./components/codeParser";
+import Header from "./components/header";
+import CodeView from "./components/codeView";
+const appClasses = {
+  quickWrap: {
+    width: "1400px",
+    margin: "0 auto",
+    background: "#fff",
+  },
+};
 export default defineComponent({
   setup() {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const { classes } = window._createStyleSheet(appClasses);
     const State = reactive({
       RefCode: `
       FromData.value = {
@@ -140,14 +152,14 @@ export default defineComponent({
       
       `,
     });
-    const getCode = (code: string) => {
-      State.RefCode = code;
-    };
+    // setInterval(() => {
+    //   State.RefCode += 1;
+    // }, 1000);
     return () => {
       return (
-        <div>
-          <MonacoEditor code={State.RefCode} onGetCode={getCode}></MonacoEditor>
-          <CodeParser code={State.RefCode}></CodeParser>
+        <div class={classes.quickWrap}>
+          <Header></Header>
+          <CodeView code={State.RefCode}></CodeView>
         </div>
       );
     };

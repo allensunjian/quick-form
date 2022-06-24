@@ -6,7 +6,25 @@
 
 ##### 动态表单快速构建工具 基于 vue 3.2.x 和 Element-plus
 
+#### demo: https://allensunjian.github.io/quick-form-example/
+
 ## Getting Start
+
+```
+npm install quick-form
+
+```
+
+##### Certified components
+
+```
+import { createApp } from 'vue'
+import ElementPlus from 'element-plus'
+import "element-plus/dist/index.css";
+import "../lib/quickFromInsideSty.scss";
+import "../lib/quickFromOutsideSty.scss";
+createApp(App).use(ElementPlus).use(QuickFrom).mount('#app')
+```
 
 ```
 

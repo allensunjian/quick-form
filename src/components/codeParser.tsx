@@ -6,6 +6,16 @@ import {
   watchEffect,
   toRefs,
 } from "vue";
+
+const parserClasses = {
+  quickParser: {
+    width: "800px",
+    height: "800px",
+    display: "inline-block",
+    float: "right",
+    padding: "20px 0",
+  },
+};
 export default defineComponent({
   props: {
     code: String,
@@ -14,6 +24,9 @@ export default defineComponent({
     const { code } = toRefs(props);
     const FromData = ref({});
     let QuickForm = {};
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    const { classes } = window._createStyleSheet(parserClasses);
     const upDateQuickElement = () => {
       FromData.value = {};
       QuickForm = {};
@@ -23,7 +36,7 @@ export default defineComponent({
     watch(code, upDateQuickElement);
     return function () {
       return (
-        <div style="width:800px;height:800px;display:inline-block;float:left">
+        <div class={classes.quickParser}>
           <quick-form
             form-data={FromData.value}
             quickOptions={QuickForm}

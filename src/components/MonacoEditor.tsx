@@ -11,29 +11,6 @@ import {
   nextTick,
 } from "vue";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import jss from "jss";
-import preset from "jss-preset-default";
-jss.setup(preset());
-const styles = {
-  wrapper: {
-    padding: 40,
-    background: "#f7df1e",
-    textAlign: "center",
-  },
-  title: {
-    font: {
-      size: 40,
-      weight: 900,
-    },
-    color: "#24292e",
-  },
-  link: {
-    color: "#24292e",
-    "&:hover": {
-      opacity: 0.5,
-    },
-  },
-};
 
 const editorProps: { code: PropType<string> } = {
   code: String,
@@ -62,14 +39,40 @@ const GetEditor = (curIns: any, code: any) => {
 
   return Mo;
 };
+const editorClasses = {
+  quickEditorWrap: {
+    width: "600px",
+    height: "800px",
+    display: "inline-block",
+    position: "relative",
+  },
+  mocaWarp: {
+    width: "600px",
+    height: "800px",
+    display: "inline-block",
+  },
+  quickRun: {
+    position: "absolute",
+    top: "0px",
+    right: 0,
+    color: "#fff",
+    background: "green",
+    display: "inline-block",
+    padding: "2px 8px",
+    "border-radius": "2px",
+    cursor: "pointer",
+  },
+};
 export default defineComponent({
   props: editorProps,
   emits: ["getCode"],
   setup(props, { emit }) {
-    const { classes } = jss.createStyleSheet(styles).attach();
     const curIns: any = getCurrentInstance();
     const { code } = toRefs(props);
     let monacoIns: any = null;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    const { classes } = window._createStyleSheet(editorClasses);
     onMounted(() => {
       if (!monacoIns) {
         monacoIns = GetEditor(curIns, code.value);
@@ -93,15 +96,9 @@ export default defineComponent({
 
     return function () {
       return (
-        <div style="width:600px; height: 800px; display:inline-block; float:left;position:relative">
-          <div
-            style="width: 600px; height: 800px; display:inline-block;float:left"
-            ref="monaco"
-          ></div>
-          <span
-            onClick={getRunCode}
-            style="position: absolute;top: 0px;right: 0;color: #fff;background: green;display: inline-block; padding: 2px 8px;border-radius: 2px;cursor:pointer"
-          >
+        <div class={classes.quickEditorWrap}>
+          <div class={classes.mocaWarp} ref="monaco"></div>
+          <span onClick={getRunCode} class={classes.quickRun}>
             运行
           </span>
         </div>

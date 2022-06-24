@@ -881,7 +881,13 @@ const eventMap: eventMapType = (() => {
     if (elType in LIB) {
       if (Array.isArray(etype)) {
         const retEvents: IObject[] = [];
+        const defaultEvent = LIB[elType].default;
+        const defaultEventMap = {
+          originalEvent: defaultEvent,
+          mountEvent: UperHelper(defaultEvent),
+        };
         etype.forEach((strEvents) => {
+          if (strEvents == defaultEvent) return;
           if (LIB[elType].includes(strEvents)) {
             retEvents.push({
               originalEvent: strEvents,
@@ -891,6 +897,7 @@ const eventMap: eventMapType = (() => {
             console.warn("未在元素类型：" + elType + "找到：" + etype + "方法");
           }
         });
+        retEvents.push(defaultEventMap);
         return retEvents;
       } else {
         if (!LIB[elType].default) {
@@ -1038,7 +1045,9 @@ const MountMainUtils = function (myThis: any): UT {
     if (!option.formElementType) return {};
     const mainType = GetCombinationType(option.formElementType).mainType;
     const eventList = eventMap.getEvents(mainType, option.tirrgerEvents);
+
     const events = {};
+
     eventList.forEach(
       ({
         mountEvent,
@@ -1057,6 +1066,7 @@ const MountMainUtils = function (myThis: any): UT {
             } else {
               /* 开启了响应赋值 */
             }
+
             if (option.formElementType == "select") {
               const valueKey = option.optionValueKey || "value";
               const lableKey = option.optionLabelKey || "label";
