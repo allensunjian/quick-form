@@ -7,23 +7,26 @@ import {
   toRefs,
 } from "vue";
 
-const parserClasses = {
-  quickParser: {
-    width: "800px",
-    height: "800px",
-    display: "inline-block",
-    float: "right",
-    padding: "20px 0",
-  },
-};
 export default defineComponent({
   props: {
     code: String,
+    height: Number,
   },
   setup(props) {
-    const { code } = toRefs(props);
+    const { code, height } = toRefs(props);
     const FromData = ref({});
     let QuickForm = {};
+    const parserClasses = {
+      quickParser: {
+        width: "800px",
+        height: height.value + "px",
+        display: "inline-block",
+        float: "right",
+        padding: "20px 0",
+        background: "#fff",
+        boxSizing: "border-box",
+      },
+    };
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const { classes } = window._createStyleSheet(parserClasses);

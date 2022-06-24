@@ -12,6 +12,10 @@ const headerClasses = {
     color: "#fff",
     lineHeight: "64px",
     padding: "0 20px",
+    zIndex: 9999,
+  },
+  quickSubTitle: {
+    fontSize: "16px",
   },
 };
 export default defineComponent({
@@ -19,10 +23,15 @@ export default defineComponent({
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const { classes } = window._createStyleSheet(headerClasses);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    const conifg = require("../../package.json");
     return () => {
       return (
         <div class={classes.quickHeader}>
-          <span>QUICK-FORM</span>
+          <span>
+            QUICK-FORM{" "}
+            <span class={classes.quickSubTitle}>--v{conifg.version}</span>
+          </span>
         </div>
       );
     };

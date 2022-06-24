@@ -12,8 +12,9 @@ import {
 } from "vue";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
-const editorProps: { code: PropType<string> } = {
+const editorProps: { code: PropType<string>; height: PropType<number> } = {
   code: String,
+  height: Number,
 } as const;
 
 const GetEditor = (curIns: any, code: any) => {
@@ -39,37 +40,38 @@ const GetEditor = (curIns: any, code: any) => {
 
   return Mo;
 };
-const editorClasses = {
-  quickEditorWrap: {
-    width: "600px",
-    height: "800px",
-    display: "inline-block",
-    position: "relative",
-  },
-  mocaWarp: {
-    width: "600px",
-    height: "800px",
-    display: "inline-block",
-  },
-  quickRun: {
-    position: "absolute",
-    top: "0px",
-    right: 0,
-    color: "#fff",
-    background: "green",
-    display: "inline-block",
-    padding: "2px 8px",
-    "border-radius": "2px",
-    cursor: "pointer",
-  },
-};
+
 export default defineComponent({
   props: editorProps,
   emits: ["getCode"],
   setup(props, { emit }) {
     const curIns: any = getCurrentInstance();
-    const { code } = toRefs(props);
+    const { code, height } = toRefs(props);
     let monacoIns: any = null;
+    const editorClasses = {
+      quickEditorWrap: {
+        width: "600px",
+        height: height.value + "px",
+        display: "inline-block",
+        position: "relative",
+      },
+      mocaWarp: {
+        width: "600px",
+        height: height.value + "px",
+        display: "inline-block",
+      },
+      quickRun: {
+        position: "absolute",
+        top: "0px",
+        right: 0,
+        color: "#fff",
+        background: "green",
+        display: "inline-block",
+        padding: "2px 8px",
+        "border-radius": "2px",
+        cursor: "pointer",
+      },
+    };
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const { classes } = window._createStyleSheet(editorClasses);

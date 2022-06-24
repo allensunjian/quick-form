@@ -7,7 +7,13 @@ const appClasses = {
   quickWrap: {
     width: "1400px",
     margin: "0 auto",
-    background: "#fff",
+    // background: "#fff",
+  },
+  quickContentSubTitle: {
+    textAlign: "center",
+    fontSize: "20px",
+    color: "#fff",
+    paddingTop: "40px",
   },
 };
 export default defineComponent({
@@ -151,6 +157,31 @@ export default defineComponent({
       };
       
       `,
+      inputCode: `
+        FromData.value = {
+          inputValue: ""
+        };
+        QuickForm = {
+          formOptions: [
+            {
+              formElementLabel: "label：",
+              formElementType: "input",
+              key: "inputValue",
+              placeholder: "placeholder",
+            },
+            {
+              formElementLabel: "响应值：",
+              formElementType: "text",
+              textValue: "{{inputValue}}"
+            }
+          ],
+          layout: {
+            labelWidth: 100,
+            size: "default",
+            labelPosition: "right",
+          },
+        }
+      `,
     });
     // setInterval(() => {
     //   State.RefCode += 1;
@@ -159,7 +190,10 @@ export default defineComponent({
       return (
         <div class={classes.quickWrap}>
           <Header></Header>
-          <CodeView code={State.RefCode}></CodeView>
+          <div class={classes.quickContentSubTitle}>--简单的使用input--</div>
+          <CodeView height={250} code={State.inputCode}></CodeView>
+          <div class={classes.quickContentSubTitle}>--较完整的例子--</div>
+          <CodeView height={800} code={State.RefCode}></CodeView>
         </div>
       );
     };
