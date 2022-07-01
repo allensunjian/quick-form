@@ -16,3 +16,25 @@
 .quick-form__upload--detail .el-upload-list__item-status-label {
     display: none !important;
 }
+.el-form-item__drag {
+    position: relative;
+}
+.el-form-item__drag::before {
+   content: "拖动组件改变位置";
+   cursor: pointer;
+   color: #fff;
+   align-items: center;
+   justify-content: center;
+   display: inline-flex;
+   position: absolute;
+   top: 0;
+   left: 0;
+   height: 100%;
+   width: 100%;
+   background: rgba(0,0,0,0.3);
+   border: 1px dashed #ddd;
+   z-index: 999;
+}
+.quick-form__state--drag_here {
+   border-top: 4px solid #1989fa
+}

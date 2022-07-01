@@ -131,6 +131,7 @@ type UT = {
   clearHandleProps: IFunction<any>;
   getComponentDeps: IFunction<any>;
   parseTempSyntax: IFunction<any>;
+  getGlobalOptions: IFunction<any>;
   rulesState: IObject<any>;
 };
 
@@ -672,12 +673,15 @@ const ElementCreator = {
     const FormChildren: any[] = [];
     // utils.scope._formData = JSON.parse(JSON.stringify(utils.scope.formData));
     const Layout = utils.GetLayout();
-    options.forEach((item) => {
-      FormChildren.push(ElementCreator.formItemFrame(item, utils));
+    options.forEach((item, index) => {
+      FormChildren.push(ElementCreator.formItemFrame(item, utils, index));
     });
     return h(
       ElForm,
       {
+        // onselectstart: () => {
+        //   return false;
+        // },
         rules: utils.scope.rules,
         model: utils.scope.formData,
         ref: FROM_INS,
@@ -687,7 +691,7 @@ const ElementCreator = {
       () => FormChildren
     );
   },
-  formItemFrame: (option: fromItemMergeType, utils: UT): any => {
+  formItemFrame: (option: fromItemMergeType, utils: UT, index): any => {
     const formElementType = option.formElementType || "container";
     const formElementLabel = option.formElementLabel;
     const key = option.key;
@@ -727,6 +731,7 @@ const ElementCreator = {
         createEventMap?: IFunction<IObject<any>>;
         GetCombinationType: any;
         GetLayout?: IFunction<LayoutType>;
+        GetDrag?: IFunction<boolean>;
         upDateFromData?: IFunction<void>;
         getMountModelValue?: IFunction<any>;
         createElementDeep?: IFunction<any[]>;
@@ -738,6 +743,7 @@ const ElementCreator = {
         getComponentDeps?: IFunction<any>;
         parseTempSyntax?: IFunction<any>;
         rulesState?: IObject<any>;
+        positionChanger?: IFunction<any>;
       }
     ) => {
       if (eltype in ElementCreator) {
@@ -774,22 +780,79 @@ const ElementCreator = {
     };
 
     const handleProps = utils.clearHandleProps(option);
+    const mergeHandlerProps = (handler1, handler2) => {
+      Object.keys(handler2).forEach((key) => {
+        if (key == "class") {
+          handler1[key] = (handler1[key] || "") + ` ${handler2[key]}`;
+        }
+      });
+      return handler1;
+    };
     return utils.parseDirective(
       h(
         ElFormItem,
-        {
-          prop: key,
-          label: utils.parseTempSyntax(formElementLabel),
-          ...handleProps,
-        },
-        () =>
-          GetItemChildren(getTypes.mainType, { ...option, ...getTypes }, utils)
+        mergeHandlerProps(
+          {
+            ...mountDrag(utils, index),
+            prop: key,
+            label: utils.parseTempSyntax(formElementLabel),
+            ...handleProps,
+          },
+          utils.GetDrag() ? { class: "el-form-item__drag" } : {}
+        ),
+        () => [
+          GetItemChildren(getTypes.mainType, { ...option, ...getTypes }, utils),
+        ]
       ),
       option,
       utils
     );
   },
 };
+
+const mountDrag = (() => {
+  let start_index = -1;
+  let end_index = -1;
+  let start_drag = false;
+  const dragClass = "quick-form__state--drag_here";
+  const setEffect = (e) => {
+    e.dataTransfer.dropEffect = "move";
+    cos;
+  };
+  return (utils: UT, index: number) => {
+    const drag = utils.GetDrag();
+    const dragProps = {
+      style: `${drag ? "position: relative" : ""}`,
+      draggable: true,
+      onDrag: (e) => {
+        setEffect(e);
+        start_drag = true;
+        start_index = index;
+        return e.preventDefault();
+      },
+      onDragover: (e) => {
+        setEffect(e);
+        e.target.classList.add(dragClass);
+        return e.preventDefault();
+      },
+      ondragleave: (e) => {
+        e.target.classList.remove(dragClass);
+        if (!start_drag) return false;
+        return e.preventDefault();
+      },
+      onDrop: (e) => {
+        e.target.classList.remove(dragClass);
+        start_drag = false;
+        end_index = index;
+        utils.positionChanger(start_index, end_index);
+        start_index = -1;
+        end_index = -1;
+      },
+    };
+    const defaultProps = {};
+    return drag ? dragProps : defaultProps;
+  };
+})();
 
 const UperHelper = (etype: string): string => {
   const etypeArr: any = etype.split("");
@@ -1102,6 +1165,10 @@ const MountMainUtils = function (myThis: any): UT {
     return myThis.quickOptions.layout;
   };
 
+  const GetDrag = (): boolean => {
+    return Boolean(myThis.quickOptions.drag);
+  };
+
   const upDateFromData = (val: any, key: string) => {
     if (key in myThis.formData) {
       if (val instanceof Event) return;
@@ -1280,6 +1347,25 @@ const MountMainUtils = function (myThis: any): UT {
       },
     };
   })();
+
+  const PositionChanger = function (start, end) {
+    const QuickFormItemOptions = myThis.quickOptions.formOptions;
+    if (start >= 0 && end >= 0 && start !== end) {
+      const StartConf = QuickFormItemOptions.splice(start, 1)[0];
+      if (start > end) {
+        QuickFormItemOptions.splice(end, 0, StartConf);
+      } else {
+        QuickFormItemOptions.splice(end - 1, 0, StartConf);
+      }
+      _emitEvent("optionChange")({
+        targetOption: StartConf,
+        start,
+        end,
+        currentOptions: JSON.stringify(_UTILS.getGlobalOptions()),
+      });
+      myThis.$forceUpdate();
+    }
+  };
   _UTILS.scope = myThis;
   _UTILS.emit = _emitVal;
   _UTILS.getModelValue = getModelValue;
@@ -1287,6 +1373,7 @@ const MountMainUtils = function (myThis: any): UT {
   _UTILS.createEventMap = createEventMap;
   _UTILS.GetCombinationType = GetCombinationType;
   _UTILS.GetLayout = GetLayout;
+  _UTILS.GetDrag = GetDrag;
   _UTILS.upDateFromData = upDateFromData;
   _UTILS.getMountModelValue = getMountModelValue;
   _UTILS.createElementDeep = createElementDeep;
@@ -1298,6 +1385,8 @@ const MountMainUtils = function (myThis: any): UT {
   _UTILS.getComponentDeps = GetComponentDeps;
   _UTILS.parseTempSyntax = ParseTempSyntax;
   _UTILS.rulesState = RulesState;
+  _UTILS.positionChanger = PositionChanger;
+  _UTILS.getGlobalOptions = () => myThis.quickOptions;
   return _UTILS;
 };
 
