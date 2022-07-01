@@ -12,7 +12,8 @@ export default defineComponent({
     code: String,
     height: Number,
   },
-  setup(props) {
+  emits: ["codeChange"],
+  setup(props, { emit }) {
     const { code, height } = toRefs(props);
     const FromData = ref({});
     let QuickForm = {};
@@ -26,6 +27,14 @@ export default defineComponent({
         background: "#fff",
         boxSizing: "border-box",
       },
+    };
+    const FormEvent = (val: any) => {
+      if (val.type == "optionChange") {
+        emit("codeChange", val.val.currentOptions);
+      }
+    };
+    const FormChange = (val: any) => {
+      console.log("change", val);
     };
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
@@ -43,6 +52,8 @@ export default defineComponent({
           <quick-form
             form-data={FromData.value}
             quickOptions={QuickForm}
+            onFormEvent={FormEvent}
+            onFormChange={FormChange}
           ></quick-form>
         </div>
       );

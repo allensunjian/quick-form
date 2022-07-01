@@ -1,4 +1,4 @@
-import { defineComponent, reactive } from "vue";
+import { defineComponent, reactive, getCurrentInstance } from "vue";
 import MonacoEditor from "./components/MonacoEditor";
 import CodeParser from "./components/codeParser";
 import Header from "./components/header";
@@ -15,14 +15,36 @@ const appClasses = {
     color: "#fff",
     paddingTop: "40px",
   },
+  controll_warp: {
+    textAlign: "right",
+  },
 };
 export default defineComponent({
   setup() {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const { classes } = window._createStyleSheet(appClasses);
-    const State = reactive({
-      RefCode: `
+    const createCodeFormData = (option: string) => {
+      return `
+      FromData.value = {
+        account: "",
+        bankType: null,
+        othersAccount: "",
+        amount: 0,
+        remark: 1111,
+        date: "2022-05-25",
+        timeData: new Date(2000, 1, 1, 12, 0, 0),
+        daterangeData: ["2022-05-01", "2022-05-05"],
+        state: 2,
+        checkboxData: [2],
+        fileList: [],
+        switchData: false,
+      };
+      QuickForm=${option}
+      `;
+    };
+    const fullDemoCode = function (drag: boolean) {
+      return `
       FromData.value = {
         account: "",
         bankType: null,
@@ -154,26 +176,49 @@ export default defineComponent({
       size: "default",
       labelPosition: "right",
     },
+        drag: ${drag},
       };
       
-      `,
+      `;
+    };
+    const ins: any = getCurrentInstance();
+
+    const State = reactive({
+      RefCode: fullDemoCode(false),
       inputCode: `
         FromData.value = {
-          inputValue: ""
+          inputValue1: "",
+          inputValue1: 0,
+          inputValue2: "",
         };
         QuickForm = {
           formOptions: [
             {
-              formElementLabel: "label：",
+              formElementLabel: "text",
               formElementType: "input",
               key: "inputValue",
               placeholder: "placeholder",
             },
             {
-              formElementLabel: "响应值：",
-              formElementType: "text",
-              textValue: "{{inputValue}}"
-            }
+              formElementLabel: "number",
+              formElementType: "input:number",
+              key: "inputValue1",
+              placeholder: "placeholder",
+            },
+            {
+              formElementLabel: "textarea",
+              formElementType: "input:textarea",
+              key: "inputValue2",
+              placeholder: "placeholder",
+            },
+            {
+              formElementLabel: "maxlengh",
+              formElementType: "input:textarea",
+              key: "inputValue2",
+              maxlength:"100",
+              showWordLimit: true,
+              placeholder: "placeholder",
+            },
           ],
           layout: {
             labelWidth: 100,
@@ -182,7 +227,176 @@ export default defineComponent({
           },
         }
       `,
+      btnCode: `
+      QuickForm = {
+        formOptions: [
+          {
+            formElementType: "button",
+            formElementLabel: "默认按钮：",
+            childrenOptions: [
+              {
+                formElementType: "button",
+                children: ["default"]
+              },
+              {
+                formElementType: "button",
+                type:"primary",
+                children: ["primary"]
+              },
+              {
+                formElementType: "button",
+                type:"success",
+                children: ["success"]
+              },
+              {
+                formElementType: "button",
+                type: "info",
+                children: ["info"]
+              },
+              {
+                formElementType: "button",
+                type: "danger",
+                children: ["danger"]
+              },
+            ],
+          },
+          {
+            formElementType: "button",
+            formElementLabel: "圆角按钮：",
+            childrenOptions: [
+              {
+                formElementType: "button",
+                children: ["default"],
+                round: true
+              },
+              {
+                formElementType: "button",
+                type:"primary",
+                children: ["primary"],
+                round: true
+              },
+              {
+                formElementType: "button",
+                type:"success",
+                children: ["success"],
+                round: true
+              },
+              {
+                formElementType: "button",
+                type: "info",
+                children: ["info"],
+                round: true
+              },
+              {
+                formElementType: "button",
+                type: "danger",
+                children: ["danger"],
+                round: true
+              },
+            ],
+          }
+        ],
+        layout: {
+          labelWidth: 100,
+          size: "default",
+          labelPosition: "right",
+        },
+      }`,
+      checkboxOrRadioCode: `
+      FromData.value = {
+        radio: 1,
+        checkboxValue: []
+      };
+      QuickForm = {
+        formOptions: [
+          {
+            formElementLabel: "单选",
+            formElementType: "radio",
+            key: "radio",
+            childrenOptions: [
+              { label: 1, children: ["选项1"]},
+              { label: 2, children: ["选项2"]},
+            ]
+          },
+          {
+            formElementLabel: "多选",
+            formElementType: "checkbox",
+            key: "checkboxValue",
+            childrenOptions: [
+              { label: 1, children: ["选项1"]},
+              { label: 2, children: ["选项2"]},
+              { label: 3, children: ["选项3"]},
+              { label: 4, children: ["选项4"]},
+            ]
+          },
+
+        ],
+        layout: {
+          labelWidth: 100,
+          size: "default",
+          labelPosition: "right",
+        },
+      }
+      `,
+      selectCode: `
+      FromData.value = {
+        selectValue: "",
+        multipleSelectValues: []
+      };
+      QuickForm = {
+        formOptions: [
+          {
+            formElementLabel: "单选",
+            formElementType: "select",
+            key: "selectValue",
+            placeholder: "请选择",
+            options: [
+              { label: "选项1", value: 1 },
+              { label: "选项2", value: 2 },
+              { label: "选项3", value: 3 },
+              { label: "选项4", value: 4 },
+            ],
+          },
+          {
+            formElementLabel: "多选",
+            formElementType: "select",
+            key: "multipleSelectValues",
+            multiple: true,
+            placeholder: "请选择",
+            options: [
+              { label: "选项1", value: 1 },
+              { label: "选项2", value: 2 },
+              { label: "选项3", value: 3 },
+              { label: "选项4", value: 4 },
+            ],
+          }
+        ],
+        layout: {
+          labelWidth: 100,
+          size: "default",
+          labelPosition: "right",
+        },
+      }
+      `,
+      dragDemo: fullDemoCode(false),
+      dragCompilte: false,
     });
+    let CurrentDragCode: any = "";
+    const Event = {
+      toDrag: () => {
+        State.dragCompilte = true;
+        State.dragDemo = fullDemoCode(true);
+      },
+      compilte: () => {
+        State.dragDemo = CurrentDragCode;
+        State.dragCompilte = false;
+      },
+      codeChange(val: any) {
+        CurrentDragCode = JSON.parse(val);
+        CurrentDragCode.drag = false;
+        CurrentDragCode = createCodeFormData(JSON.stringify(CurrentDragCode));
+      },
+    };
     // setInterval(() => {
     //   State.RefCode += 1;
     // }, 1000);
@@ -190,10 +404,50 @@ export default defineComponent({
       return (
         <div class={classes.quickWrap}>
           <Header></Header>
-          <div class={classes.quickContentSubTitle}>--简单的使用input--</div>
-          <CodeView height={250} code={State.inputCode}></CodeView>
-          <div class={classes.quickContentSubTitle}>--较完整的例子--</div>
-          <CodeView height={800} code={State.RefCode}></CodeView>
+          <CodeView
+            height={300}
+            code={State.inputCode}
+            title="--简单的使用input--"
+          ></CodeView>
+          <CodeView
+            height={300}
+            code={State.selectCode}
+            title="--简单的使用select--"
+          ></CodeView>
+          <CodeView
+            height={250}
+            code={State.btnCode}
+            title="--简单的使用button--"
+          ></CodeView>
+          <CodeView
+            height={450}
+            code={State.checkboxOrRadioCode}
+            title="--简单的使用radio/checkbox--"
+          ></CodeView>
+          <CodeView
+            height={800}
+            code={State.RefCode}
+            title="--较完整的例子--"
+          ></CodeView>
+          <CodeView
+            height={800}
+            code={State.dragDemo}
+            title="--可拖拽的例子--"
+            ref="dragView"
+            onCodeChange={Event.codeChange}
+          >
+            <div class={classes.controll_warp}>
+              {!State.dragCompilte ? (
+                <el-button type="primary" onClick={Event.toDrag}>
+                  拖拽表单
+                </el-button>
+              ) : (
+                <el-button type="primary" onClick={Event.compilte}>
+                  拖拽完成
+                </el-button>
+              )}
+            </div>
+          </CodeView>
         </div>
       );
     };

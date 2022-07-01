@@ -1,13 +1,13 @@
 import { createApp } from "vue";
 import App from "./App";
 import "./registerServiceWorker";
-import quickForm from "../build/index";
+import quickForm from "../lib/index";
 import "element-plus/dist/index.css";
 import "../lib/quickFromInsideSty.scss";
 import "../lib/quickFromOutsideSty.scss";
 import jss from "jss";
 import preset from "jss-preset-default";
-
+import elemenPlus from "element-plus";
 function quickCss(): any {
   jss.setup(preset());
   return {
@@ -20,4 +20,4 @@ function quickCss(): any {
     },
   };
 }
-createApp(App).use(quickCss()).use(quickForm).mount("#app");
+createApp(App).use(quickCss()).use(elemenPlus).use(quickForm).mount("#app");
