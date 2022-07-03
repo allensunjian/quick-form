@@ -3,6 +3,7 @@ import MonacoEditor from "./components/MonacoEditor";
 import CodeParser from "./components/codeParser";
 import Header from "./components/header";
 import CodeView from "./components/codeView";
+import DragLayout from "./components/dragLayout";
 const appClasses = {
   quickWrap: {
     width: "1400px",
@@ -448,6 +449,7 @@ export default defineComponent({
               )}
             </div>
           </CodeView>
+          <DragLayout></DragLayout>
         </div>
       );
     };

@@ -817,7 +817,6 @@ const mountDrag = (() => {
   const dragClass = "quick-form__state--drag_here";
   const setEffect = (e) => {
     e.dataTransfer.dropEffect = "move";
-    cos;
   };
   return (utils: UT, index: number) => {
     const drag = utils.GetDrag();
@@ -1404,6 +1403,14 @@ const MainRender = function () {
   };
 };
 
+export const QuickForm = {
+  ...Props,
+  ..._Data,
+  ...Methods,
+  ...Dires,
+  ...MainRender(),
+};
+
 const mount = function (app: {
   component: (
     arg0: string,
@@ -1426,15 +1433,10 @@ const mount = function (app: {
     }
   ) => void;
 }) {
-  app.component("quick-form", {
-    ...Props,
-    ..._Data,
-    ...Methods,
-    ...Dires,
-    ...MainRender(),
-  });
+  app.component("quick-form", QuickForm);
   _app = app;
 };
+
 export default {
   install: mount,
 };
