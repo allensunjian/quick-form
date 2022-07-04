@@ -6,22 +6,7 @@ import "core-js/modules/es.array.includes.js";
 /* tslint:disable */
 import Dires from "./utils/directives";
 import { h, withDirectives, resolveDirective } from "vue";
-import {
-  ElForm,
-  ElFormItem,
-  ElButton,
-  ElSelect,
-  ElOption,
-  ElInput,
-  ElInputNumber,
-  ElRadio,
-  ElCheckbox,
-  ElUpload,
-  ElIcon,
-  ElDatePicker,
-  ElTimePicker,
-  ElSwitch,
-} from "element-plus";
+import { ElForm, ElFormItem, ElButton, ElSelect, ElOption, ElInput, ElInputNumber, ElRadio, ElCheckbox, ElUpload, ElIcon, ElDatePicker, ElTimePicker, ElSwitch } from "element-plus";
 import { CirclePlus, Download, Delete } from "@element-plus/icons-vue";
 let _app = null;
 const _EVENT_ = "formChange";
@@ -33,49 +18,25 @@ const FROM_C = "quick-form__label--container";
 const FROM_C_EL = "div";
 const FORM_EL_IMG = "img"; // const reviewControlls = ["preview", "download", "delete"]
 
-const HandleProps =
-  /* 忽略属性 */
-  [
-    "children",
-    "options",
-    "directives",
-    "formElementType",
-    "formElementLabel",
-    "key",
-    "tirrgerEvents",
-    "textValue",
-    "currentPropPath",
-    "itemStyle",
-    "preventDefaultEvent",
-    "component",
-    "slotOptions",
-    "optionLabelKey",
-    "optionValueKey",
-    "mainType",
-    "subType",
-    "mountModelValue",
-    "showControll",
-    "childrenOptions",
-  ];
+const HandleProps
+/* 忽略属性 */
+= ["children", "options", "directives", "formElementType", "formElementLabel", "key", "tirrgerEvents", "textValue", "currentPropPath", "itemStyle", "preventDefaultEvent", "component", "slotOptions", "optionLabelKey", "optionValueKey", "mainType", "subType", "mountModelValue", "showControll", "childrenOptions"];
 const TemplateReg = /\{\{.*?\}\}/g;
 
-const emitVal =
-  (scope) =>
-  (type, key) =>
-  (val, mergeObject = {}) => {
-    scope.$emit(_EVENT_, {
-      type,
-      key,
-      val,
-      ...mergeObject,
-    });
-  };
-
-const emitEvent = (scope) => (type, key) => (val) => {
-  scope.$emit(_FROM_EVENT_, {
+const emitVal = scope => (type, key) => (val, mergeObject = {}) => {
+  scope.$emit(_EVENT_, {
     type,
     key,
     val,
+    ...mergeObject
+  });
+};
+
+const emitEvent = scope => (type, key) => val => {
+  scope.$emit(_FROM_EVENT_, {
+    type,
+    key,
+    val
   });
 };
 
@@ -94,24 +55,24 @@ const VnodeImg = {
   props: {
     imgOption: {
       type: Object,
-      default: () => ({}),
+      default: () => ({})
     },
     imgData: {
       type: Object,
-      default: () => ({}),
+      default: () => ({})
     },
     imgControll: {
       type: Array,
-      default: () => [],
+      default: () => []
     },
     showControll: {
       type: Boolean,
-      default: true,
+      default: true
     },
     currentIndex: {
       type: Number,
-      default: null,
-    },
+      default: null
+    }
   },
 
   render() {
@@ -121,81 +82,64 @@ const VnodeImg = {
     const showC = myThis.showControll;
     const currentIndex = myThis.currentIndex;
     const controllMap = {
-      preview: () =>
-        ElementCreator.icon({
-          children: [CirclePlus],
-          ...iconConf,
-          onClick: eventClick("preview"),
-        }),
-      download: () =>
-        ElementCreator.icon({
-          children: [Download],
-          ...iconConf,
-          onClick: eventClick("download"),
-        }),
-      delete: () =>
-        ElementCreator.icon({
-          children: [Delete],
-          ...iconConf,
-          onClick: eventClick("delete"),
-        }),
+      preview: () => ElementCreator.icon({
+        children: [CirclePlus],
+        ...iconConf,
+        onClick: eventClick("preview")
+      }),
+      download: () => ElementCreator.icon({
+        children: [Download],
+        ...iconConf,
+        onClick: eventClick("download")
+      }),
+      delete: () => ElementCreator.icon({
+        children: [Delete],
+        ...iconConf,
+        onClick: eventClick("delete")
+      })
     };
 
-    const GetControllELs = () =>
-      Array.isArray(controll)
-        ? controll.map((controlStr) =>
-            controlStr in controllMap ? controllMap[controlStr]() : ""
-          )
-        : [];
+    const GetControllELs = () => Array.isArray(controll) ? controll.map(controlStr => controlStr in controllMap ? controllMap[controlStr]() : "") : [];
 
-    const vnode = () =>
-      h(FORM_EL_IMG, {
-        src: myThis.imgData.url,
-        height: 100,
-        ...option,
-        class: "quick-form__imglist--item",
-      });
+    const vnode = () => h(FORM_EL_IMG, {
+      src: myThis.imgData.url,
+      height: 100,
+      ...option,
+      class: "quick-form__imglist--item"
+    });
 
     const iconConf = {
       size: 16,
-      color: "#fff",
+      color: "#fff"
     };
 
-    const eventClick = (type) => () => {
+    const eventClick = type => () => {
       myThis.$emit("imgEvent", type, currentIndex);
     };
 
-    const imgModalVnode = () =>
-      h(
-        FROM_C_EL,
-        {
-          class: "quick-form__imglist--itemModal",
-        },
-        GetControllELs()
-      );
+    const imgModalVnode = () => h(FROM_C_EL, {
+      class: "quick-form__imglist--itemModal"
+    }, GetControllELs());
 
     let wVnode = null;
-    wVnode = h(
-      FROM_C_EL,
-      {
-        class: "quick-form__imglist--itemwarp",
-        style: "height: 100px",
-      },
-      showC && controll.length > 0 ? [vnode(), imgModalVnode()] : [vnode()]
-    );
+    wVnode = h(FROM_C_EL, {
+      class: "quick-form__imglist--itemwarp",
+      style: "height: 100px"
+    }, showC && controll.length > 0 ? [vnode(), imgModalVnode()] : [vnode()]);
     return wVnode;
-  },
+  }
+
 };
 const VnodeImgList = {
   props: {
     listOption: {
       type: Object,
-      default: () => ({}),
+      default: () => ({})
     },
     imgList: {
       type: Array,
-      default: () => [],
-    },
+      default: () => []
+    }
   },
 
   render() {
@@ -212,76 +156,53 @@ const VnodeImgList = {
       myThis.$emit(type, index);
     };
 
-    return h(
-      FROM_C_EL,
-      {
-        class: FROM_C,
-      },
-      List.map
-        ? List.map((imgObj, index) => {
-            return h(VnodeImg, {
-              imgData: imgObj,
-              imgOption: option.itemStyle || {},
-              imgControll: option.controll,
-              showControll:
-                typeof option.showControll == "boolean"
-                  ? option.showControll
-                  : true,
-              currentIndex: index,
-              onImgEvent: event,
-            });
-          })
-        : []
-    );
-  },
+    return h(FROM_C_EL, {
+      class: FROM_C
+    }, List.map ? List.map((imgObj, index) => {
+      return h(VnodeImg, {
+        imgData: imgObj,
+        imgOption: option.itemStyle || {},
+        imgControll: option.controll,
+        showControll: typeof option.showControll == "boolean" ? option.showControll : true,
+        currentIndex: index,
+        onImgEvent: event
+      });
+    }) : []);
+  }
+
 };
 const ElementCreator = {
   switch: (option, utils) => {
     const EmitEvent = utils.emit("change", option.key);
     const HandleProps = utils.clearHandleProps(option);
-    return utils.parseDirective(
-      h(ElSwitch, {
-        ...HandleProps,
-        ...utils.createEventMap(option, utils),
-        modelValue: utils.getModelValue(option),
-      }),
-      option,
-      utils
-    );
+    return utils.parseDirective(h(ElSwitch, { ...HandleProps,
+      ...utils.createEventMap(option, utils),
+      modelValue: utils.getModelValue(option)
+    }), option, utils);
   },
   time: (option, utils) => {
     const EmitEvent = utils.emit("change", option.key);
     const HandleProps = utils.clearHandleProps(option);
-    return utils.parseDirective(
-      h(ElTimePicker, {
-        ...HandleProps,
-        ...utils.createEventMap(option, utils),
-        modelValue: utils.getModelValue(option),
-        "onUpdate:modelValue": Throttling(50, function (val) {
-          utils.upDateFromData(val, option.mountModelValue || option.key);
-          EmitEvent(val);
-        }),
-      }),
-      option,
-      utils
-    );
+    return utils.parseDirective(h(ElTimePicker, { ...HandleProps,
+      ...utils.createEventMap(option, utils),
+      modelValue: utils.getModelValue(option),
+      "onUpdate:modelValue": Throttling(50, function (val) {
+        utils.upDateFromData(val, option.mountModelValue || option.key);
+        EmitEvent(val);
+      })
+    }), option, utils);
   },
   date: (option, utils) => {
     const HandleProps = utils.clearHandleProps(option);
     const EmitEvent = utils.emit("change", option.key);
-    return utils.parseDirective(
-      h(ElDatePicker, {
-        ...HandleProps,
-        ...utils.createEventMap(option, utils),
-        modelValue: utils.getModelValue(option),
-        "onUpdate:modelValue": Throttling(50, function (val) {
-          utils.upDateFromData(val, option.mountModelValue || option.key);
-          EmitEvent(val);
-        }),
-      }),
-      option,
-      utils
-    ); // return utils.parseDirective(h(ElDatePicker, {
+    return utils.parseDirective(h(ElDatePicker, { ...HandleProps,
+      ...utils.createEventMap(option, utils),
+      modelValue: utils.getModelValue(option),
+      "onUpdate:modelValue": Throttling(50, function (val) {
+        utils.upDateFromData(val, option.mountModelValue || option.key);
+        EmitEvent(val);
+      })
+    }), option, utils); // return utils.parseDirective(h(ElDatePicker, {
     //     ...HandleProps,
     //     ...utils.createEventMap(option, utils),
     //     modelValue: utils.getModelValue(option),
@@ -294,36 +215,32 @@ const ElementCreator = {
   imgList: (option, utils) => {
     const Emit = utils.emitEvent("formEvent", option.formElementType); // const HandleProps = utils.clearHandleProps(option);
 
-    return utils.parseDirective(
-      h(VnodeImgList, {
-        imgList: utils.GetParentModelVal(option.currentPropPath),
-        listOption: option,
-        ...option,
-        onPreview: function (index) {
-          Emit({
-            type: "preview",
-            key: option.key,
-            index,
-          });
-        },
-        onDelete: function (index) {
-          Emit({
-            type: "delete",
-            key: option.key,
-            index,
-          });
-        },
-        onDownload: function (index) {
-          Emit({
-            type: "download",
-            key: option.key,
-            index,
-          });
-        },
-      }),
-      option,
-      utils
-    );
+    return utils.parseDirective(h(VnodeImgList, {
+      imgList: utils.GetParentModelVal(option.currentPropPath),
+      listOption: option,
+      ...option,
+      onPreview: function (index) {
+        Emit({
+          type: "preview",
+          key: option.key,
+          index
+        });
+      },
+      onDelete: function (index) {
+        Emit({
+          type: "delete",
+          key: option.key,
+          index
+        });
+      },
+      onDownload: function (index) {
+        Emit({
+          type: "download",
+          key: option.key,
+          index
+        });
+      }
+    }), option, utils);
   },
   upload: (option, utils) => {
     // @ts-ignore
@@ -340,11 +257,14 @@ const ElementCreator = {
 
     const mountFileList = function (option) {
       const fileListDepend = option.mountModelValue || option.key;
-      const { name, url } = option.alias || {
+      const {
+        name,
+        url
+      } = option.alias || {
         name: "name",
-        url: "url",
+        url: "url"
       };
-      (utils.scope.formData[fileListDepend] || []).forEach((item) => {
+      (utils.scope.formData[fileListDepend] || []).forEach(item => {
         if (!("name" in item) || !("url" in item)) {
           item.name = item[name];
           item.url = item[url];
@@ -366,43 +286,37 @@ const ElementCreator = {
       };
 
       return {
-        fileList: getFileList(),
+        fileList: getFileList()
       };
     };
 
-    const mountObject = IsDetail
-      ? {
-          class: "quick-form__upload--detail",
-          ...mountFileList(option),
-          ...utils.createEventMap(option, utils),
-        }
-      : {
-          ...utils.createEventMap(option, utils),
-          // ...utils.getMountModelValue(option),
-          ...mountFileList(option),
-          ...HandleProps,
-        };
-    return utils.parseDirective(
-      h(ElUpload, { ...mountObject, accept: _accept }, () =>
-        IsDetail ? [] : utils.createElementDeep(option)
-      ),
-      option,
-      utils
-    );
+    const mountObject = IsDetail ? {
+      class: "quick-form__upload--detail",
+      ...mountFileList(option),
+      ...utils.createEventMap(option, utils)
+    } : { ...utils.createEventMap(option, utils),
+      // ...utils.getMountModelValue(option),
+      ...mountFileList(option),
+      ...HandleProps
+    };
+    return utils.parseDirective(h(ElUpload, { ...mountObject,
+      accept: _accept
+    }, () => IsDetail ? [] : utils.createElementDeep(option)), option, utils);
   },
-  icon: (option) => {
+  icon: option => {
     let children = [];
     const handleProps = ClearHandleProps(option);
 
     try {
-      children = (option.children || []).map((vnodeRender) => {
+      children = (option.children || []).map(vnodeRender => {
         return h(vnodeRender);
       });
     } catch (error) {
       /* error block */
     }
 
-    return h(ElIcon, { ...handleProps }, () => children);
+    return h(ElIcon, { ...handleProps
+    }, () => children);
   },
   text: (option, utils) => {
     let modelValue, EventMap;
@@ -413,89 +327,55 @@ const ElementCreator = {
     }
 
     const handleProps = utils.clearHandleProps(option);
-    return utils.parseDirective(
-      h(TEXT_EL, { ...EventMap, ...handleProps }, [
-        utils.parseTempSyntax(option.textValue) || modelValue || "",
-      ]),
-      option,
-      utils
-    );
+    return utils.parseDirective(h(TEXT_EL, { ...EventMap,
+      ...handleProps
+    }, [utils.parseTempSyntax(option.textValue) || modelValue || ""]), option, utils);
   },
   container: (options, utils) => {
     // const children = utils.createElementDeep(options);
     // delete options.children
     const HandleProps = utils.clearHandleProps(options);
-    return utils.parseDirective(
-      h(
-        "div",
-        { ...utils.createEventMap(options, utils), ...HandleProps },
-        utils.createElementDeep(options)
-      ),
-      options,
-      utils
-    );
+    return utils.parseDirective(h("div", { ...utils.createEventMap(options, utils),
+      ...HandleProps
+    }, utils.createElementDeep(options)), options, utils);
   },
   inputNumber: (option, utils) => {
-    return utils.parseDirective(
-      h(ElInputNumber, {
-        modelValue: utils.getModelValue(option),
-        ...utils.createEventMap(option, utils),
-        ...option,
-      }),
-      option
-    );
+    return utils.parseDirective(h(ElInputNumber, {
+      modelValue: utils.getModelValue(option),
+      ...utils.createEventMap(option, utils),
+      ...option
+    }), option);
   },
   radio: (option, utils) => {
     const textChilren = option.children;
     delete option.children;
-    return utils.parseDirective(
-      h(
-        ElRadio,
-        {
-          modelValue: utils.getModelValue(option),
-          // ...utils.createEventMap(option, utils),
-          onClick: Throttling(50, () => {
-            utils.upDateFromData(
-              option.label,
-              option.mountModelValue || option.key
-            );
-          }),
-          ...option,
-        },
-        () => textChilren
-      ),
-      option,
-      utils
-    );
+    return utils.parseDirective(h(ElRadio, {
+      modelValue: utils.getModelValue(option),
+      // ...utils.createEventMap(option, utils),
+      onClick: Throttling(50, () => {
+        utils.upDateFromData(option.label, option.mountModelValue || option.key);
+      }),
+      ...option
+    }, () => textChilren), option, utils);
   },
   checkbox: (option, utils) => {
     const textChilren = option.children;
     delete option.children;
-    return utils.parseDirective(
-      h(
-        ElCheckbox,
-        {
-          modelValue: Array.isArray(utils.getModelValue(option))
-            ? utils.getModelValue(option).indexOf(option.label) >= 0
-            : false,
-          // ...utils.createEventMap(option, utils),
-          onClick: Throttling(50, function () {
-            const ModelData = utils.getModelValue(option);
-            const hasIndex = ModelData.indexOf(option.label);
+    return utils.parseDirective(h(ElCheckbox, {
+      modelValue: Array.isArray(utils.getModelValue(option)) ? utils.getModelValue(option).indexOf(option.label) >= 0 : false,
+      // ...utils.createEventMap(option, utils),
+      onClick: Throttling(50, function () {
+        const ModelData = utils.getModelValue(option);
+        const hasIndex = ModelData.indexOf(option.label);
 
-            if (hasIndex >= 0) {
-              ModelData.splice(hasIndex, 1);
-            } else {
-              ModelData.push(option.label);
-            }
-          }),
-          ...option,
-        },
-        () => textChilren
-      ),
-      option,
-      utils
-    );
+        if (hasIndex >= 0) {
+          ModelData.splice(hasIndex, 1);
+        } else {
+          ModelData.push(option.label);
+        }
+      }),
+      ...option
+    }, () => textChilren), option, utils);
   },
   input: (option, utils) => {
     // 兼容el-input-number
@@ -504,17 +384,13 @@ const ElementCreator = {
     }
 
     const handleProps = utils.clearHandleProps(option);
-    return utils.parseDirective(
-      h(ElInput, {
-        modelValue: utils.getModelValue(option),
-        ...utils.createEventMap(option, utils),
-        placeholder: option.placeholder,
-        type: option.subType ? option.subType : "text",
-        ...handleProps,
-      }),
-      option,
-      utils
-    );
+    return utils.parseDirective(h(ElInput, {
+      modelValue: utils.getModelValue(option),
+      ...utils.createEventMap(option, utils),
+      placeholder: option.placeholder,
+      type: option.subType ? option.subType : "text",
+      ...handleProps
+    }), option, utils);
   },
   select: (option, utils) => {
     const handlerPorps = utils.clearHandleProps(option);
@@ -524,37 +400,25 @@ const ElementCreator = {
     const valueKey = option.optionValueKey || "value";
 
     const getEls = (arr = []) => {
-      (arr || []).forEach((item) => {
+      (arr || []).forEach(item => {
         const optionVnode = h(ElOption, {
           value: item[valueKey],
-          label: item[lableKey],
+          label: item[lableKey]
         });
         optEls.push(optionVnode);
       });
     };
 
     getEls(utils.getComponentDeps(options));
-    return utils.parseDirective(
-      h(
-        ElSelect,
-        {
-          modelValue: utils.getModelValue(option),
-          ...utils.createEventMap(option, utils),
-          ...handlerPorps,
-        },
-        () => optEls
-      ),
-      option,
-      utils
-    );
+    return utils.parseDirective(h(ElSelect, {
+      modelValue: utils.getModelValue(option),
+      ...utils.createEventMap(option, utils),
+      ...handlerPorps
+    }, () => optEls), option, utils);
   },
   button: (options, utils) => {
     const handleProps = utils.clearHandleProps(options);
-    return utils.parseDirective(
-      h(ElButton, handleProps, () => utils.createElementDeep(options)),
-      options,
-      utils
-    );
+    return utils.parseDirective(h(ElButton, handleProps, () => utils.createElementDeep(options)), options, utils);
   },
   formFrame: (options, utils) => {
     const FormChildren = []; // utils.scope._formData = JSON.parse(JSON.stringify(utils.scope.formData));
@@ -563,20 +427,16 @@ const ElementCreator = {
     options.forEach((item, index) => {
       FormChildren.push(ElementCreator.formItemFrame(item, utils, index));
     });
-    return h(
-      ElForm,
-      {
-        // onselectstart: () => {
-        //   return false;
-        // },
-        rules: utils.scope.rules,
-        model: utils.scope.formData,
-        ref: FROM_INS,
-        // validateOnRuleChange: false,
-        ...Layout,
-      },
-      () => FormChildren
-    );
+    return h(ElForm, {
+      // onselectstart: () => {
+      //   return false;
+      // },
+      rules: utils.scope.rules,
+      model: utils.scope.formData,
+      ref: FROM_INS,
+      // validateOnRuleChange: false,
+      ...Layout
+    }, () => FormChildren.length == 0 ? "请设置表单元素" : FormChildren);
   },
   formItemFrame: (option, utils, index) => {
     const formElementType = option.formElementType || "container";
@@ -596,16 +456,9 @@ const ElementCreator = {
           }
         }
 
-        return ElementCreator.container(
-          {
-            children: [
-              getTypes.subType
-                ? "无法找到插槽：" + getTypes.subType
-                : "请传入自定义组件",
-            ],
-          },
-          utils
-        );
+        return ElementCreator.container({
+          children: [getTypes.subType ? "无法找到插槽：" + getTypes.subType : "请传入自定义组件"]
+        }, utils);
       }
     }
 
@@ -617,33 +470,27 @@ const ElementCreator = {
 
         if (Array.isArray(vnodeOptions) && eltype !== "text") {
           delete options.childrenOptions;
-          vnodeOptions.forEach((option) => {
-            const getTypes = option.formElementType
-              ? utils.GetCombinationType(option.formElementType)
-              : {};
+          vnodeOptions.forEach(option => {
+            const getTypes = option.formElementType ? utils.GetCombinationType(option.formElementType) : {};
 
             if (option.formElementType) {
               // 正常多组件
               eltype = getTypes.mainType;
-            } else {
-              // 兼容 select option的情况
+            } else {// 兼容 select option的情况
             }
 
-            retChildVnodes.push(
-              ElementCreator[eltype](
-                {
-                  key: options.key,
-                  ...option,
-                  ...getTypes,
-                },
-                utils
-              )
-            );
+            retChildVnodes.push(ElementCreator[eltype]({
+              key: options.key,
+              ...option,
+              ...getTypes
+            }, utils));
           });
           return retChildVnodes;
         }
 
-        return [ElementCreator[eltype]({ ...options, ...getTypes }, utils)];
+        return [ElementCreator[eltype]({ ...options,
+          ...getTypes
+        }, utils)];
       } else {
         /* error block */
         return [];
@@ -653,7 +500,7 @@ const ElementCreator = {
     const handleProps = utils.clearHandleProps(option);
 
     const mergeHandlerProps = (handler1, handler2) => {
-      Object.keys(handler2).forEach((key) => {
+      Object.keys(handler2).forEach(key => {
         if (key == "class") {
           handler1[key] = (handler1[key] || "") + ` ${handler2[key]}`;
         }
@@ -661,30 +508,16 @@ const ElementCreator = {
       return handler1;
     };
 
-    return utils.parseDirective(
-      h(
-        ElFormItem,
-        mergeHandlerProps(
-          {
-            ...mountDrag(utils, index),
-            prop: key,
-            label: utils.parseTempSyntax(formElementLabel),
-            ...handleProps,
-          },
-          utils.GetDrag()
-            ? {
-                class: "el-form-item__drag",
-              }
-            : {}
-        ),
-        () => [
-          GetItemChildren(getTypes.mainType, { ...option, ...getTypes }, utils),
-        ]
-      ),
-      option,
-      utils
-    );
-  },
+    return utils.parseDirective(h(ElFormItem, mergeHandlerProps({ ...mountDrag(utils, index),
+      prop: key,
+      label: utils.parseTempSyntax(formElementLabel),
+      ...handleProps
+    }, utils.GetDrag() ? {
+      class: "el-form-item__drag"
+    } : {}), () => [GetItemChildren(getTypes.mainType, { ...option,
+      ...getTypes
+    }, utils)]), option, utils);
+  }
 };
 
 const mountDrag = (() => {
@@ -693,7 +526,7 @@ const mountDrag = (() => {
   let start_drag = false;
   const dragClass = "quick-form__state--drag_here";
 
-  const setEffect = (e) => {
+  const setEffect = e => {
     e.dataTransfer.dropEffect = "move";
   };
 
@@ -702,45 +535,45 @@ const mountDrag = (() => {
     const dragProps = {
       style: `${drag ? "position: relative" : ""}`,
       draggable: true,
-      onDrag: (e) => {
+      onDrag: e => {
         setEffect(e);
         start_drag = true;
         start_index = index;
         return e.preventDefault();
       },
-      onDragover: (e) => {
+      onDragover: e => {
         setEffect(e);
         e.target.classList.add(dragClass);
         return e.preventDefault();
       },
-      ondragleave: (e) => {
+      ondragleave: e => {
         e.target.classList.remove(dragClass);
         if (!start_drag) return false;
         return e.preventDefault();
       },
-      onDrop: (e) => {
+      onDrop: e => {
         e.target.classList.remove(dragClass);
         start_drag = false;
         end_index = index;
         utils.positionChanger(start_index, end_index);
         start_index = -1;
         end_index = -1;
-      },
+      }
     };
     const defaultProps = {};
     return drag ? dragProps : defaultProps;
   };
 })();
 
-const UperHelper = (etype) => {
+const UperHelper = etype => {
   const etypeArr = etype.split("");
   const start = etypeArr.shift().toUpperCase();
   return `on${start}${etypeArr.join("")}`;
 };
 
-const ClearHandleProps = (options) => {
+const ClearHandleProps = options => {
   const OriginalProps = {};
-  Object.keys(options).forEach((curKey) => {
+  Object.keys(options).forEach(curKey => {
     if (!HandleProps.includes(curKey)) OriginalProps[curKey] = options[curKey];
   });
   return OriginalProps;
@@ -753,17 +586,7 @@ const eventMap = (() => {
   selectEvents.default = "change";
   const textEvents = ["click"];
   textEvents.default = "click";
-  const uploadEvents = [
-    "preview",
-    "remove",
-    "success",
-    "error",
-    "progress",
-    "change",
-    "exceed",
-    "upload",
-    "remove",
-  ];
+  const uploadEvents = ["preview", "remove", "success", "error", "progress", "change", "exceed", "upload", "remove"];
   uploadEvents.default = "change";
   const containerEvents = ["click", "mouseover", "mouseenter"];
   containerEvents.default = "click";
@@ -771,29 +594,9 @@ const eventMap = (() => {
   checkboxEvents.default = "change";
   const radioEvents = ["click", "mouseover", "mouseenter", "change"];
   radioEvents.default = "click";
-  const dateEvents = [
-    "click",
-    "mouseover",
-    "mouseenter",
-    "change",
-    "blur",
-    "focus",
-    "calendarChange",
-    "panelChange",
-    "visibleChange",
-  ];
+  const dateEvents = ["click", "mouseover", "mouseenter", "change", "blur", "focus", "calendarChange", "panelChange", "visibleChange"];
   dateEvents.default = "change";
-  const timeEvents = [
-    "click",
-    "mouseover",
-    "mouseenter",
-    "change",
-    "blur",
-    "focus",
-    "calendarChange",
-    "panelChange",
-    "visibleChange",
-  ];
+  const timeEvents = ["click", "mouseover", "mouseenter", "change", "blur", "focus", "calendarChange", "panelChange", "visibleChange"];
   timeEvents.default = "change";
   const switchEvents = ["click", "mouseover", "mouseenter", "change"];
   switchEvents.default = "change";
@@ -807,7 +610,7 @@ const eventMap = (() => {
     radio: radioEvents,
     date: dateEvents,
     time: timeEvents,
-    switch: switchEvents,
+    switch: switchEvents
   };
 
   const getEvents = (elType, etype) => {
@@ -817,15 +620,15 @@ const eventMap = (() => {
         const defaultEvent = LIB[elType].default;
         const defaultEventMap = {
           originalEvent: defaultEvent,
-          mountEvent: UperHelper(defaultEvent),
+          mountEvent: UperHelper(defaultEvent)
         };
-        etype.forEach((strEvents) => {
+        etype.forEach(strEvents => {
           if (strEvents == defaultEvent) return;
 
           if (LIB[elType].includes(strEvents)) {
             retEvents.push({
               originalEvent: strEvents,
-              mountEvent: UperHelper(strEvents),
+              mountEvent: UperHelper(strEvents)
             });
           } else {
             console.warn("未在元素类型：" + elType + "找到：" + etype + "方法");
@@ -838,12 +641,10 @@ const eventMap = (() => {
           console.warn("can not found default event in " + elType);
         }
 
-        return [
-          {
-            originalEvent: LIB[elType].default,
-            mountEvent: UperHelper(LIB[elType].default),
-          },
-        ];
+        return [{
+          originalEvent: LIB[elType].default,
+          mountEvent: UperHelper(LIB[elType].default)
+        }];
       }
     } else {
       console.warn("未定义:" + elType + "元素类型");
@@ -851,13 +652,13 @@ const eventMap = (() => {
     }
   };
 
-  const getDefaultEvent = (elType) => {
+  const getDefaultEvent = elType => {
     return LIB[elType]?.default;
   };
 
   return {
     getEvents,
-    getDefaultEvent,
+    getDefaultEvent
   };
 })();
 
@@ -901,35 +702,36 @@ const Methods = {
           resolve("");
         }, 200);
       });
-    },
-  },
+    }
+
+  }
 };
 const _Data = {
   data: () => ({
     _quickOptions: {},
     defaultValue: "未匹配到key",
-    _raw: new Date().getTime(),
-  }),
+    _raw: new Date().getTime()
+  })
 };
 const Props = {
   props: {
     formData: {
       type: Object,
-      default: () => ({}),
+      default: () => ({})
     },
     quickOptions: {
       type: Object,
-      default: () => ({}),
+      default: () => ({})
     },
     depOptions: {
       type: Object,
-      default: () => ({}),
+      default: () => ({})
     },
     rules: {
       type: Object,
-      default: () => ({}),
-    },
-  },
+      default: () => ({})
+    }
+  }
 };
 
 const MountMainUtils = function (myThis) {
@@ -939,17 +741,17 @@ const MountMainUtils = function (myThis) {
 
   const _UTILS = {};
 
-  const GetCombinationType = (type) => {
+  const GetCombinationType = type => {
     const typeArr = type.split(":");
     const mainType = typeArr[0];
     const subType = typeArr[1];
     return {
       mainType,
-      subType,
+      subType
     };
   };
 
-  const getModelValue = (key) => {
+  const getModelValue = key => {
     let _key = null;
     let _mountValue = undefined;
     if (!key) return null;
@@ -978,7 +780,10 @@ const MountMainUtils = function (myThis) {
     const mainType = GetCombinationType(option.formElementType).mainType;
     const eventList = eventMap.getEvents(mainType, option.tirrgerEvents);
     const events = {};
-    eventList.forEach(({ mountEvent, originalEvent }) => {
+    eventList.forEach(({
+      mountEvent,
+      originalEvent
+    }) => {
       const EmitEvent = _emitVal(originalEvent, option.key);
 
       const defaultEvent = eventMap.getDefaultEvent(mainType);
@@ -996,19 +801,16 @@ const MountMainUtils = function (myThis) {
             const valueKey = option.optionValueKey || "value";
             const lableKey = option.optionLabelKey || "label";
             const redundantKeys = option.redundantKeys || [];
-            const selectItem = utils
-              .getComponentDeps(option.options)
-              .filter((option) => option[valueKey] == val)
-              .map((option) => ({
-                value: option[valueKey],
-                label: option[lableKey],
-                ...redundantKeys.reduce((ref, cur) => {
-                  ref[cur] = option[cur];
-                  return ref;
-                }, {}),
-              }));
+            const selectItem = utils.getComponentDeps(option.options).filter(option => option[valueKey] == val).map(option => ({
+              value: option[valueKey],
+              label: option[lableKey],
+              ...redundantKeys.reduce((ref, cur) => {
+                ref[cur] = option[cur];
+                return ref;
+              }, {})
+            }));
             return EmitEvent(val, {
-              option: selectItem[0],
+              option: selectItem[0]
             });
           }
 
@@ -1037,7 +839,7 @@ const MountMainUtils = function (myThis) {
     }
   };
 
-  const getMountModelValue = (option) => {
+  const getMountModelValue = option => {
     const retMap = {};
     const key = option.mountModelValue;
 
@@ -1049,32 +851,27 @@ const MountMainUtils = function (myThis) {
     return retMap;
   };
 
-  const createElementDeep = (options) => {
+  const createElementDeep = options => {
     const children = options.children || [];
     const targetProp = options.key;
     const currentPropPath = [...(options.currentPropPath || []), targetProp];
     const retMap = [];
     if (!Array.isArray(children)) return;
-    children.forEach((child) => {
+    children.forEach(child => {
       if (typeof child == "string") {
-        return retMap.push(
-          ElementCreator.text(
-            {
-              textValue: child,
-            },
-            _UTILS
-          )
-        );
+        return retMap.push(ElementCreator.text({
+          textValue: child
+        }, _UTILS));
       }
 
       const elType = child.formElementType;
 
       if (elType in ElementCreator) {
         child.currentPropPath = currentPropPath;
-        retMap.push(
-          // @ts-ignore
-          ElementCreator[elType]({ ...child, key: targetProp }, _UTILS)
-        );
+        retMap.push( // @ts-ignore
+        ElementCreator[elType]({ ...child,
+          key: targetProp
+        }, _UTILS));
       } else {
         console.warn("validate child option:" + JSON.stringify(child));
       }
@@ -1082,7 +879,7 @@ const MountMainUtils = function (myThis) {
     return retMap;
   };
 
-  const GetParentModelVal = (path) => {
+  const GetParentModelVal = path => {
     const parentModelProp = path.shift();
     const propValue = getModelValue(parentModelProp);
 
@@ -1098,19 +895,12 @@ const MountMainUtils = function (myThis) {
     // delete options.directives;
 
     if (Array.isArray(directives)) {
-      const s = directives.map((ds) => {
+      const s = directives.map(ds => {
         const directive = ds[0];
         const QueryString = "_UTILS.scope.formData";
         const QueryDepString = "_UTILS.scope.depOptions";
-        const condition = ds[1]
-          .replace(new RegExp("scope", "g"), QueryString)
-          .replace(new RegExp("depScope", "g"), QueryDepString);
-        return [
-          resolveDirective(directive),
-          eval(condition),
-          utils,
-          options.key,
-        ];
+        const condition = ds[1].replace(new RegExp("scope", "g"), QueryString).replace(new RegExp("depScope", "g"), QueryDepString);
+        return [resolveDirective(directive), eval(condition), utils, options.key];
       });
       vnode = withDirectives(vnode, s);
     }
@@ -1118,16 +908,15 @@ const MountMainUtils = function (myThis) {
     return vnode;
   };
 
-  const RenderComponents = (options) => {
+  const RenderComponents = options => {
     const slotOptions = options.slotOptions || {};
     const props = slotOptions.props || [];
     const receiver = slotOptions.receiver || [];
     const createPorps = props.reduce((ref, cur, index) => {
       try {
         // @ts-ignore
-        ref[cur.prop] = {
-          ..._UTILS.scope.formData,
-          ..._UTILS.scope.depOptions,
+        ref[cur.prop] = { ..._UTILS.scope.formData,
+          ..._UTILS.scope.depOptions
         }[cur.value];
       } catch (error) {
         console.log(error);
@@ -1144,20 +933,18 @@ const MountMainUtils = function (myThis) {
         Emit({
           type: cur,
           key: options.key,
-          value,
+          value
         });
       };
 
       return ref;
     }, {});
-    return ParseDirective(
-      h(options.component, { ...createPorps, ...CreateReceiver }),
-      options,
-      _UTILS
-    );
+    return ParseDirective(h(options.component, { ...createPorps,
+      ...CreateReceiver
+    }), options, _UTILS);
   };
 
-  const GetComponentDeps = (depName) => {
+  const GetComponentDeps = depName => {
     if (typeof depName == "string") {
       if (depName in myThis.depOptions) {
         return myThis.depOptions[depName];
@@ -1168,9 +955,7 @@ const MountMainUtils = function (myThis) {
     } else if (Array.isArray(depName)) {
       return depName;
     } else {
-      console.warn(
-        "invalid depName type:" + typeof depName + ", must be Array or String"
-      );
+      console.warn("invalid depName type:" + typeof depName + ", must be Array or String");
     }
   };
 
@@ -1179,13 +964,9 @@ const MountMainUtils = function (myThis) {
       const parseArr = val.match(TemplateReg);
 
       if (parseArr && parseArr.length > 0) {
-        parseArr.map((parseString) => {
+        parseArr.map(parseString => {
           const str = parseString.replace("{{", "").replace("}}", "");
-          const mergeObject = Object.assign(
-            {},
-            _UTILS.scope.formData,
-            _UTILS.scope.depOptions
-          );
+          const mergeObject = Object.assign({}, _UTILS.scope.formData, _UTILS.scope.depOptions);
           const parsedVal = mergeObject[str];
           val = val.replace(parseString, parsedVal);
         });
@@ -1199,8 +980,7 @@ const MountMainUtils = function (myThis) {
     const rules = null;
     const deleteKeys = [];
     return {
-      setRules(_rules) {
-        // rules = JSON.parse(JSON.stringify(_rules));
+      setRules(_rules) {// rules = JSON.parse(JSON.stringify(_rules));
       },
 
       resetState(key, state) {
@@ -1221,7 +1001,8 @@ const MountMainUtils = function (myThis) {
         // const emit = _UTILS.emitEvent("directiveEvent", type);
         // @ts-ignore
         window["StateLib" + myThis._raw] = this;
-      },
+      }
+
     };
   })();
 
@@ -1241,7 +1022,7 @@ const MountMainUtils = function (myThis) {
         targetOption: StartConf,
         start,
         end,
-        currentOptions: JSON.stringify(_UTILS.getGlobalOptions()),
+        currentOptions: JSON.stringify(_UTILS.getGlobalOptions())
       });
 
       myThis.$forceUpdate();
@@ -1284,25 +1065,26 @@ const MainRender = function () {
       UTILS.rulesState.setRules(myThis.quickOptions.rules);
       const FromVnode = ElementCreator.formFrame(formOptions, UTILS);
       return FromVnode;
-    },
+    }
+
   };
 };
 
-export const _QuickForm = {
-  ...Props,
+const _QuickForm = { ...Props,
   ..._Data,
   ...Methods,
   ...Dires,
-  ...MainRender(),
+  ...MainRender()
 };
-export const QuickForm = function () {
-  console.log(arguments);
+export const QuickForm = function (argus) {
+  return h(_QuickForm, argus);
 };
+
 const mount = function (app) {
   app.component("quick-form", _QuickForm);
   _app = app;
 };
 
 export default {
-  install: mount,
+  install: mount
 };

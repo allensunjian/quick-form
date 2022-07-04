@@ -1,4 +1,14 @@
-import { defineComponent, ref, Ref, nextTick } from "vue";
+import { AnyColumns } from "element-plus/lib/components/table-v2/src/types.js";
+import {
+  defineComponent,
+  ref,
+  Ref,
+  nextTick,
+  h,
+  reactive,
+  getCurrentInstance,
+} from "vue";
+// import { QuickForm } from "../../build/index.js";
 import { QuickForm } from "../../build/index.js";
 const dragViewClasses = {
   dragLayout: {
@@ -57,9 +67,38 @@ const dragViewClasses = {
     boxSizing: "border-box",
   },
 };
+const toolClasses = {
+  toolTip: {
+    display: "flex",
+    width: "100%",
+    height: "100%",
+    color: "var(--el-menu-border-color)",
+    alignItems: "center",
+    "justify-content": "center",
+    "font-size": "20px",
+    "pointer-events": "none",
+  },
+  "toolTip__state--danger": {
+    color: "var(--el-color-danger)",
+  },
+  "toolTip__state--warn": {
+    color: "var(--el-color-warning)",
+  },
+  "toolTip__state--success": {
+    color: "var(--el-color-success)",
+  },
+};
+enum toolTipState {
+  warn = "toolTip__state--warn",
+  danger = "toolTip__state--danger",
+  success = "toolTip__state--success",
+}
+
 const state_over_class = "quick-form__state--element-over";
 
-type Tshotcut = "shotcut-view";
+type TToolState = "danger" | "warn" | "success";
+
+type Tshotcut = "shotcut-view" | "shotcut-input" | "shotcut-button";
 type Tcontainer = "container-view";
 
 type TAtomicts = Tshotcut | Tcontainer;
@@ -83,10 +122,6 @@ interface IFunction<T = void> {
   (...items: any): T;
 }
 
-const elementGen = {
-  // container: () => {},
-  // containerView: () => {},
-};
 const Throttling = function (dely: number, fn: IFunction) {
   let timer: any = null;
   return function (...argus: any[]) {
@@ -101,9 +136,15 @@ const Throttling = function (dely: number, fn: IFunction) {
 
 export default defineComponent({
   setup: () => {
+    let Ins: any = getCurrentInstance();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const { classes } = window._createStyleSheet(dragViewClasses);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    const utilClasses = window._createStyleSheet(toolClasses);
+
+    // 快捷配置
     const elementShotcutGen = {
       "shotcut-view": (registerInfo: any, title, children: any[]) => {
         const events = dragEvent(
@@ -131,7 +172,105 @@ export default defineComponent({
 
         return vnode;
       },
+      "shotcut-input": (registerInfo: any, title, children: any[]) => {
+        const events = dragEvent(
+          registerInfo.elementType,
+          registerInfo.viewType,
+          registerInfo.componentName
+        );
+        const vnode = (
+          <div
+            draggable="true"
+            class={classes.toolbarItem}
+            onDrag={events.drag}
+            onDragleave={events.dragleave}
+            onDragover={events.dragover}
+          >
+            {title}
+          </div>
+        );
+        nextTick(() => {
+          RegisterIns.setEl(
+            registerInfo.componentName,
+            vnode.el as HTMLElement
+          );
+        });
+
+        return vnode;
+      },
+      "shotcut-button": (registerInfo: any, title, children: any[]) => {
+        const events = dragEvent(
+          registerInfo.elementType,
+          registerInfo.viewType,
+          registerInfo.componentName
+        );
+        const vnode = (
+          <div
+            draggable="true"
+            class={classes.toolbarItem}
+            onDrag={events.drag}
+            onDragleave={events.dragleave}
+            onDragover={events.dragover}
+          >
+            {title}
+          </div>
+        );
+        nextTick(() => {
+          RegisterIns.setEl(
+            registerInfo.componentName,
+            vnode.el as HTMLElement
+          );
+        });
+
+        return vnode;
+      },
     };
+    // form 基础信息
+    const option_temp = {
+      formOptions: [],
+      layout: {
+        labelWidth: 100,
+        size: "default",
+        labelPosition: "right",
+      },
+    };
+    const FormQuickOptionsLib = reactive({});
+
+    const FormQuickDataLib = reactive({});
+    // 自定义事件
+    const handleElementGen = {
+      getQuickForm: function (registerInfo: any) {
+        if (!FormQuickOptionsLib[registerInfo.componentName]) {
+          FormQuickOptionsLib[registerInfo.componentName] = JSON.parse(
+            JSON.stringify(option_temp)
+          );
+        }
+        if (!FormQuickDataLib[registerInfo.componentName]) {
+          FormQuickDataLib[registerInfo.componentName] = {};
+        }
+        console.log(
+          "表单绑定",
+          FormQuickDataLib,
+          FormQuickDataLib[registerInfo.componentName]
+        );
+        const form: any = h(QuickForm, {
+          ref: registerInfo.componentName,
+          formData: FormQuickDataLib[registerInfo.componentName],
+          quickOptions: FormQuickOptionsLib[registerInfo.componentName],
+        });
+        return form;
+      },
+      itemGenFac: function (elementType: TAtomicts) {
+        // input 配置表
+        // button 配置表
+        return (
+          <el-dialog modelValue={showConfig.value} title="Tips" width="30%">
+            <span>This is a message</span>
+          </el-dialog>
+        );
+      },
+    };
+    // 主画布 元素
     const elementComponentGen = {
       "container-view": (registerInfo: any, title, children: any[]) => {
         //
@@ -151,17 +290,10 @@ export default defineComponent({
           >
             {children.length > 0
               ? children
-              : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              //@ts-ignore
-              // <QuickForm
-              //   form-data={FromData}
-              //   quickOptions={QuickFormOptions}
-              // ></QuickForm>
-              title
-              ? title
-              : registerInfo.componentName}
+              : handleElementGen.getQuickForm(registerInfo)}
           </div>
         );
+        console.log(vnode);
         nextTick(() => {
           RegisterIns.setEl(
             registerInfo.componentName,
@@ -171,46 +303,157 @@ export default defineComponent({
         return vnode;
       },
     };
-
-    const FromData = {
-      inputValue1: "",
-      inputValue2: "",
-    };
-    const QuickFormOptions = {
-      formOptions: [
-        {
-          formElementLabel: "text",
-          formElementType: "input",
-          key: "inputValue",
-          placeholder: "placeholder",
-        },
-        {
-          formElementLabel: "number",
-          formElementType: "input:number",
-          key: "inputValue1",
-          placeholder: "placeholder",
-        },
-        {
-          formElementLabel: "textarea",
-          formElementType: "input:textarea",
-          key: "inputValue2",
-          placeholder: "placeholder",
-        },
-        {
-          formElementLabel: "maxlengh",
-          formElementType: "input:textarea",
-          key: "inputValue2",
-          maxlength: "100",
-          showWordLimit: true,
-          placeholder: "placeholder",
-        },
-      ],
-      layout: {
-        labelWidth: 100,
-        size: "default",
-        labelPosition: "right",
+    // 工具类视图元素
+    const elementUtilsGen = {
+      tooltip: (text: string, type: TToolState) => {
+        return (
+          <div
+            class={[
+              utilClasses.classes[toolTipState[type]],
+              utilClasses.classes.toolTip,
+            ]}
+          >
+            {text}
+          </div>
+        );
       },
     };
+
+    // 表单元素配置事件
+    const showConfig = ref(false);
+    const handlerFormItemEvent = (() => {
+      const FormItemState = reactive({
+        formItemData: {},
+        titleType: "",
+      });
+      const defaultEventTypeForForm = {
+        input: (
+          name: string,
+          key: string,
+          placeholder?: string,
+          format?: (val) => any
+        ) =>
+          Object.assign(
+            {
+              formElementLabel: name,
+              key,
+              placeholder: placeholder ? placeholder : "请输入" + name,
+              formElementType: "input",
+            },
+            format ? { format } : {}
+          ),
+      };
+
+      // 表单配置字段构建规则
+      const rule_gen_formitem = {
+        formElementLabel: defaultEventTypeForForm.input(
+          "名称",
+          "formElementLabel"
+        ),
+        key: defaultEventTypeForForm.input("主键", "key"),
+        placeholder: defaultEventTypeForForm.input("占位符", "placeholder"),
+        diretives: defaultEventTypeForForm.input("指令", "diretives"),
+        children: defaultEventTypeForForm.input(
+          "子属性",
+          "children",
+          "请输入子属性多个属性用逗号隔开",
+          function (val) {
+            return val.split(",");
+          }
+        ),
+        defaultValue: defaultEventTypeForForm.input("默认值", "defaultValue"),
+        type: defaultEventTypeForForm.input("元素类型", "type"),
+      };
+      // 表单元素动态 配置项
+      const shotview_conifg = {
+        "shotcut-input": [
+          "formElementType:input",
+          "formElementLabel",
+          "key",
+          "placeholder",
+          "diretives",
+          "defaultValue",
+        ],
+        "shotcut-button": [
+          "formElementType:button",
+          "formElementLabel",
+          "type",
+          "children",
+        ],
+      };
+      // 仓库用于保存 运行时的 format
+      let currentValueFormat = {};
+
+      const createConigForShotview = (arr: string[]) => {
+        return arr.map((textConfig) => {
+          const keyAndVal = textConfig.split(":");
+          if (keyAndVal.length == 2) {
+            // keyAndVal 两个参数则 已经有默认值  直接赋值即可
+            FormItemState.formItemData[keyAndVal[0]] = keyAndVal[1];
+            return {};
+          }
+          FormItemState.formItemData[textConfig] = "";
+          if (textConfig in rule_gen_formitem) {
+            const target = rule_gen_formitem[textConfig];
+            if ("format" in target) {
+              currentValueFormat[target.key] = target.format;
+              delete target.format;
+            }
+            return rule_gen_formitem[textConfig];
+          }
+        });
+      };
+      const copy = (val) => JSON.parse(JSON.stringify(val));
+
+      const createQuickFormRealItem = (): any => {
+        // 这里应该存在校验
+        return copy(FormItemState.formItemData);
+      };
+      const cancel = () => {
+        showConfig.value = false;
+        currentElementInfo = null;
+        _reject("user cancel");
+        FormItemState.formItemData = {};
+        currentValueFormat = {};
+      };
+
+      let currentElementInfo: any = null;
+      let _reslove: any = null;
+      let _reject: any = null;
+
+      return {
+        genConifgForm(info: any) {
+          currentElementInfo = info;
+          FormItemState.titleType = currentElementInfo;
+          const FromConfig = createConigForShotview(
+            shotview_conifg[currentElementInfo]
+          );
+          configQuickForm.formOptions = FromConfig;
+          showConfig.value = true;
+          return new Promise((resolve, reject) => {
+            _reslove = resolve;
+            _reject = reject;
+          });
+        },
+        submitFormItem() {
+          const conifg = createQuickFormRealItem();
+          Object.keys(conifg).forEach((formatKey) => {
+            if (currentValueFormat[formatKey]) {
+              conifg[formatKey] = currentValueFormat[formatKey](
+                conifg[formatKey]
+              );
+            }
+          });
+          _reslove(conifg);
+          cancel();
+        },
+        cancel,
+        getFormState() {
+          return FormItemState.formItemData;
+        },
+        getTitleType: () => FormItemState.titleType,
+      };
+    })();
 
     const dragSlot: Ref<any[]> = ref([]);
 
@@ -221,9 +464,9 @@ export default defineComponent({
       componentName: "",
     };
     let RootComponent: any = null;
+    // 拖动状态快捷设置
     const short_getDom = (fn: (dom: any, e: any) => void) => (e) =>
       fn(e.target, e);
-
     const elementState = {
       setOver: short_getDom((dom, e) => {
         // const clientWidth = dom.clientWidth;
@@ -237,6 +480,18 @@ export default defineComponent({
         dom.classList.remove(state_over_class);
       }),
     };
+
+    // 表单元素 固定配置项
+    // const formCommonConig = {
+    //   formElementLabel: {
+    //     text: {},
+    //     placeholder: "请输入行名称",
+    //     key: "formElementLabel",
+    //     directives: [],
+    //     // 默认值
+    //     defaultValue: "",
+    //   },
+    // };
 
     const RegisterCache = (() => {
       const counterMap: { TView: number } | {} = {};
@@ -330,6 +585,18 @@ export default defineComponent({
         };
       };
 
+      const remove = (viewType: TView, componentName: string) => {
+        if (componentName in RegisterMap) {
+          delete RegisterMap[componentName];
+          const index = cache[viewType].findIndex(
+            (info) => info.componentName == componentName
+          );
+          if (index == -1) return;
+          cache[viewType].splice(index, 1);
+          console.log(cache, RegisterMap);
+        }
+      };
+
       const register = (
         viewType: TView,
         elementType: TAtomicts,
@@ -337,7 +604,7 @@ export default defineComponent({
       ) => {
         let ret: any = {};
         if (defaultKeys.indexOf(viewType) >= 0) {
-          console.log("注冊", defaultKeys, viewType);
+          // 注冊
           counterMap[viewType]++;
           const pos = counterMap[viewType];
           const vnodeInfo = createElementInfo(
@@ -363,6 +630,7 @@ export default defineComponent({
           setEl,
           getRegisterInfo,
           renderVNodeFromElementInfo,
+          remove,
         };
       };
       return {
@@ -382,8 +650,6 @@ export default defineComponent({
         viewType: TView,
         componentName?: string
       ) => {
-        console.log("開始注冊", viewType, "類名", elementType);
-
         const EventRansit = (eventType: string, fn: (e: any) => void) => {
           return function (e) {
             // console.log(eventType, viewType, componentName);
@@ -435,13 +701,27 @@ export default defineComponent({
         const drop = registerToCache("drop", (e) => {
           // 容器渲染
           if (_overed_components.viewType == "container") {
-            console.log("放在了容器裏");
-            // 説明 放在的容器裏
-            // 創建 view-container
-            // 保存根節點
-            RootComponent = RegisterIns.register("component", elementType);
+            if (!_draging_component_name) return;
+            const currentDraggingElement = RegisterIns.getRegisterInfo(
+              _draging_component_name
+            );
+            // 空的容器 只有 放置快捷 一種
+            if (currentDraggingElement.viewType == "shotcut") {
+              // 拖拽到容器中的是 快捷
+              // 快捷 只有容器类型可被首次创建
+              if (currentDraggingElement.elementType !== "shotcut-view") {
+                dragSlot.value = [
+                  elementUtilsGen.tooltip("请首先放置容器元素", "warn"),
+                ];
+              } else {
+                // 説明 放在的容器裏
+                // 創建 view-container
+                // 保存根節點
+                RootComponent = RegisterIns.register("component", elementType);
 
-            dragSlot.value = RegisterIns.getInfos("component").render();
+                dragSlot.value = RegisterIns.getInfos("component").render();
+              }
+            }
           } else {
             // 其他渲染
             const FatherInfo = RegisterIns.getRegisterInfo(
@@ -452,18 +732,42 @@ export default defineComponent({
             );
             // 子 來自 shotcut 需要 注冊一個
             if (childInfo.viewType == "shotcut") {
-              FatherInfo.children.push(
-                // 這裏先寫死
-                // 需要 動態 根據 shotcut類型來創建 注冊類型
-                RegisterIns.register("component", "container-view")
-              );
+              if (childInfo.elementType == "shotcut-view") {
+                FatherInfo.children.push(
+                  // 這裏先寫死
+                  // 需要 動態 根據 shotcut類型來創建 注冊類型
+                  RegisterIns.register("component", "container-view")
+                );
+                dragSlot.value = [
+                  RegisterIns.renderVNodeFromElementInfo(RootComponent),
+                ];
+              } else {
+                handlerFormItemEvent
+                  .genConifgForm(childInfo.elementType)
+                  .then((config: any) => {
+                    console.log(config);
+                    // 设置动态依赖
+                    if (config.key) {
+                      FormQuickDataLib[FatherInfo.componentName][config.key] =
+                        config.defaultValue;
+                    }
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    //@ts-ignore
+                    window.FormQuickDataLib = FormQuickDataLib;
+                    console.log("初始值", FormQuickDataLib);
+                    FormQuickOptionsLib[
+                      FatherInfo.componentName
+                    ].formOptions.push(config);
+                  })
+                  .catch((e) => {
+                    console.log(e);
+                  });
 
-              dragSlot.value = [
-                RegisterIns.renderVNodeFromElementInfo(RootComponent),
-              ];
+                // dragSlot.value = RegisterIns.getInfos("component").render();
+              }
+            } else {
+              //其他情況 如 容器内的子容器互換位置等
             }
-
-            console.log(childInfo, FatherInfo);
           }
           _overed_components.componentName = "";
           _overed_components.elementType = "";
@@ -492,25 +796,80 @@ export default defineComponent({
 
     // 注册拖拽元素
     const dragEventRegister = dragEvent("container-view", "container");
-    return () => (
-      <div class={classes.dragLayout}>
-        <div class={classes.dragTitle}>拖拽布局</div>
-        <div class={classes.dragContent}>
-          <div class={classes.toolbar}>
-            {createItemShortcut([
-              { elementType: "shotcut-view", title: "容器" },
-            ])}
+
+    const configQuickForm: any = reactive({
+      formOptions: [],
+      layout: {
+        labelWidth: 100,
+        size: "default",
+        labelPosition: "right",
+      },
+    });
+
+    const StartEdit = () => {
+      Object.keys(FormQuickOptionsLib).forEach((info) => {
+        FormQuickOptionsLib[info].drag = !FormQuickOptionsLib[info].drag;
+      });
+    };
+    return function () {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      // console.log(1111, this.$forceUpdate);
+      Ins = this;
+      return (
+        <div class={classes.dragLayout}>
+          <div class={classes.dragTitle}>
+            拖拽布局
+            <el-button
+              style="float: right"
+              onClick={StartEdit}
+              size="small"
+              type="primary"
+            >
+              开始/结束编辑
+            </el-button>
           </div>
-          <div
-            draggable="false"
-            class={classes.dragView}
-            onDrop={dragEventRegister.drop}
-            onDragover={dragEventRegister.dragover}
+          <div class={classes.dragContent}>
+            <div class={classes.toolbar}>
+              {createItemShortcut([
+                { elementType: "shotcut-view", title: "容器" },
+                { elementType: "shotcut-input", title: "输入" },
+                { elementType: "shotcut-button", title: "按钮" },
+              ])}
+            </div>
+            <div
+              draggable="false"
+              class={classes.dragView}
+              onDrop={dragEventRegister.drop}
+              onDragover={dragEventRegister.dragover}
+            >
+              {dragSlot.value}
+            </div>
+          </div>
+          <el-dialog
+            modelValue={showConfig.value}
+            title={handlerFormItemEvent.getTitleType() + "类型设置"}
+            showClose={false}
+            beforeClose={handlerFormItemEvent.cancel}
+            width="600px"
           >
-            {dragSlot.value}
-          </div>
+            <quick-form
+              ref="configQuickForm"
+              quickOptions={configQuickForm}
+              form-data={handlerFormItemEvent.getFormState()}
+            ></quick-form>
+            <div style="text-align: right">
+              <el-button
+                type="primary"
+                size="small"
+                onClick={handlerFormItemEvent.submitFormItem}
+              >
+                保存
+              </el-button>
+            </div>
+          </el-dialog>
         </div>
-      </div>
-    );
+      );
+    };
   },
 });

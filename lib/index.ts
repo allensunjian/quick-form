@@ -688,7 +688,7 @@ const ElementCreator = {
         // validateOnRuleChange: false,
         ...Layout,
       },
-      () => FormChildren
+      () => (FormChildren.length == 0 ? "请设置表单元素" : FormChildren)
     );
   },
   formItemFrame: (option: fromItemMergeType, utils: UT, index): any => {
@@ -1403,12 +1403,16 @@ const MainRender = function () {
   };
 };
 
-export const QuickForm = {
+const _QuickForm = {
   ...Props,
   ..._Data,
   ...Methods,
   ...Dires,
   ...MainRender(),
+};
+
+export const QuickForm = function (argus) {
+  return h(_QuickForm, argus);
 };
 
 const mount = function (app: {
@@ -1433,7 +1437,7 @@ const mount = function (app: {
     }
   ) => void;
 }) {
-  app.component("quick-form", QuickForm);
+  app.component("quick-form", _QuickForm);
   _app = app;
 };
 
