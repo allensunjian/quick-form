@@ -163,10 +163,11 @@ export default defineComponent({
             {children.length > 0 ? children : title}
           </div>
         );
+
         nextTick(() => {
           RegisterIns.setEl(
             registerInfo.componentName,
-            vnode.el as HTMLElement
+            vnode
           );
         });
 
@@ -192,7 +193,7 @@ export default defineComponent({
         nextTick(() => {
           RegisterIns.setEl(
             registerInfo.componentName,
-            vnode.el as HTMLElement
+            vnode
           );
         });
 
@@ -218,10 +219,42 @@ export default defineComponent({
         nextTick(() => {
           RegisterIns.setEl(
             registerInfo.componentName,
-            vnode.el as HTMLElement
+            vnode
           );
         });
 
+        return vnode;
+      },
+    };
+    // 主画布 元素
+    const elementComponentGen = {
+      "container-view": (registerInfo: any, title, children: any[]) => {
+        //
+        const events = dragEvent(
+          registerInfo.elementType,
+          registerInfo.viewType,
+          registerInfo.componentName
+        );
+        const vnode = (
+          <div
+            draggable="true"
+            class={classes.dragElementView}
+            onDrag={events.drag}
+            onDragleave={events.dragleave}
+            onDragover={events.dragover}
+            onMousemove={events.mousemove}
+          >
+            {children.length > 0
+              ? children
+              : handleElementGen.getQuickForm(registerInfo)}
+          </div>
+        );
+        nextTick(() => {
+          RegisterIns.setEl(
+            registerInfo.componentName,
+            vnode
+          );
+        });
         return vnode;
       },
     };
@@ -270,39 +303,7 @@ export default defineComponent({
         );
       },
     };
-    // 主画布 元素
-    const elementComponentGen = {
-      "container-view": (registerInfo: any, title, children: any[]) => {
-        //
-        const events = dragEvent(
-          registerInfo.elementType,
-          registerInfo.viewType,
-          registerInfo.componentName
-        );
-        const vnode = (
-          <div
-            draggable="true"
-            class={classes.dragElementView}
-            onDrag={events.drag}
-            onDragleave={events.dragleave}
-            onDragover={events.dragover}
-            onMousemove={events.mousemove}
-          >
-            {children.length > 0
-              ? children
-              : handleElementGen.getQuickForm(registerInfo)}
-          </div>
-        );
-        console.log(vnode);
-        nextTick(() => {
-          RegisterIns.setEl(
-            registerInfo.componentName,
-            vnode.el as HTMLElement
-          );
-        });
-        return vnode;
-      },
-    };
+
     // 工具类视图元素
     const elementUtilsGen = {
       tooltip: (text: string, type: TToolState) => {
@@ -463,7 +464,7 @@ export default defineComponent({
       elementType: "",
       componentName: "",
     };
-    let RootComponent: any = null;
+    const RootComponent: any = ref(null);
     // 拖动状态快捷设置
     const short_getDom = (fn: (dom: any, e: any) => void) => (e) =>
       fn(e.target, e);
@@ -524,8 +525,22 @@ export default defineComponent({
         return RegisterMap[componentName];
       };
 
-      const setEl = (componentName: string, vnode: HTMLElement) => {
-        RegisterMap[componentName].target = vnode;
+      const setEl = (componentName: string, vnode: any) => {
+        let timer: any = null;
+        let counter = 0;
+        timer = setInterval(() => {
+          if (counter == 20) {
+            clearInterval(timer);
+            console.log("注册失败", vnode)
+          }
+          if (vnode.el) {
+            RegisterMap[componentName].target = vnode;
+            clearInterval(timer);
+            console.log("注册成功", vnode.el)
+          } else {
+            counter++
+          }
+        }, 50)
       };
 
       const Render = (renderObject: any) => ({
@@ -550,6 +565,7 @@ export default defineComponent({
         },
       });
       const renderVNodeFromElementInfo = (vnodeInfo: any) => {
+        if (!vnodeInfo) return ""
         const retVnodeList: any[] = [];
         const viewType = vnodeInfo.viewType;
         const elementType = vnodeInfo.elementType;
@@ -561,18 +577,6 @@ export default defineComponent({
             vnodeInfo.children.map((info) => renderVNodeFromElementInfo(info))
           );
         }
-
-        // setArr.forEach((info) => {
-        //   console.log(3333, info);
-        //   // const type = info.type;
-        //   // const children = info.children;
-        //   // if (elementMap[type]) {
-        //   //   retVnodeList.push(elementMap[type](info.elementType, children));
-        //   //   return retVnodeList;
-        //   // } else {
-        //   //   return [];
-        //   // }
-        // });
         return retVnodeList;
       };
       const getInfos = (viewType: TView): { render: any } => {
@@ -710,16 +714,18 @@ export default defineComponent({
               // 拖拽到容器中的是 快捷
               // 快捷 只有容器类型可被首次创建
               if (currentDraggingElement.elementType !== "shotcut-view") {
-                dragSlot.value = [
-                  elementUtilsGen.tooltip("请首先放置容器元素", "warn"),
-                ];
+                // dragSlot.value = [
+                //   elementUtilsGen.tooltip("请首先放置容器元素", "warn"),
+                // ];
+                RootComponent.value = [elementUtilsGen.tooltip("请首先放置容器元素", "warn"),]
               } else {
                 // 説明 放在的容器裏
                 // 創建 view-container
                 // 保存根節點
-                RootComponent = RegisterIns.register("component", elementType);
+                RootComponent.value = RegisterIns.register("component", elementType);
 
-                dragSlot.value = RegisterIns.getInfos("component").render();
+                // dragSlot.value = RegisterIns.getInfos("component").render();
+                // dragSlot.value = [RegisterIns.renderVNodeFromElementInfo(RootComponent)]
               }
             }
           } else {
@@ -738,9 +744,12 @@ export default defineComponent({
                   // 需要 動態 根據 shotcut類型來創建 注冊類型
                   RegisterIns.register("component", "container-view")
                 );
-                dragSlot.value = [
-                  RegisterIns.renderVNodeFromElementInfo(RootComponent),
-                ];
+                // RootComponent.value = RootComponent.value;
+                Ins.$forceUpdate()
+                // RootComponent.value = RegisterIns.renderVNodeFromElementInfo(RootComponent);
+                // dragSlot.value = [
+                //   RegisterIns.renderVNodeFromElementInfo(RootComponent),
+                // ];
               } else {
                 handlerFormItemEvent
                   .genConifgForm(childInfo.elementType)
@@ -843,7 +852,7 @@ export default defineComponent({
               onDrop={dragEventRegister.drop}
               onDragover={dragEventRegister.dragover}
             >
-              {dragSlot.value}
+              {[RegisterIns.renderVNodeFromElementInfo(RootComponent.value)]}
             </div>
           </div>
           <el-dialog
