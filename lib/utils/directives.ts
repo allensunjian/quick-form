@@ -41,4 +41,5 @@ const EXP = {
     },
   },
 };
+
 export default EXP;

@@ -9,6 +9,7 @@ $fontTitle: 16px;
     margin: 0 auto;
 }
 .quick-form__body {
+    color: #333;
     width: $formWidth;
     @extend .quick-form__block--center
 }
@@ -70,4 +71,17 @@ $fontTitle: 16px;
     box-sizing: border-box;
     color: var(--el-color-success);
     pointer-events: none
+}
+
+.quick-form__state--align--center {
+    text-align: center;
+}
+.quick-form__state--mb--20 {
+    margin-bottom: 20px;
+}
+.quick-form__fc--light {
+    color: var(--el-border-color);
+}
+.quick-form__fc--default {
+    color: #333;
 }

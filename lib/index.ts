@@ -707,7 +707,16 @@ const ElementCreator = {
         // validateOnRuleChange: false,
         ...Layout,
       },
-      () => (FormChildren.length == 0 ? "请设置表单元素" : FormChildren)
+      () =>
+        FormChildren.length == 0
+          ? h(
+              "div",
+              {
+                class: "quick-form__state--align--center quick-form__fc--light",
+              },
+              ["请设置表单元素"]
+            )
+          : FormChildren
     );
   },
   formItemFrame: (option: fromItemMergeType, utils: UT, index): any => {
@@ -1431,6 +1440,10 @@ const _QuickForm = {
 
 export const QuickForm = function (argus) {
   return h(_QuickForm, argus);
+};
+
+export const HasDirective = (dir: string) => {
+  return Boolean(Dires.directives[dir]);
 };
 
 const mount = function (app: {

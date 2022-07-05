@@ -9,6 +9,7 @@ export declare const Throttling: (dely: number, fn: IFunction) => (...argus: any
 export declare const QuickForm: (argus: any) => VNode<RendererNode, RendererElement, {
     [key: string]: any;
 }>;
+export declare const HasDirective: (dir: string) => boolean;
 declare const _default: {
     install: (app: {
         component: (arg0: string, arg1: {
