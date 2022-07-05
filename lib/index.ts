@@ -510,6 +510,7 @@ const ElementCreator = {
       }) as any[];
     } catch (error) {
       /* error block */
+      children = [];
     }
     return h(ElIcon, { ...handleProps }, () => children);
   },
@@ -621,6 +622,24 @@ const ElementCreator = {
     return utils.parseDirective(
       h(ElInput, {
         modelValue: utils.getModelValue(option),
+        // props: {
+        //   modelValue: utils.getModelValue(option),
+        // },
+
+        // onInput: (() => {
+        //   let start: number | null = null;
+        //   return (val) => {
+        //     console.log(val);
+        //     if (window.event && window.event.target) {
+        //       if (start !== null) {
+        //         // window.event.target.setSelectionRange(start, start);
+        //       }
+        //       start = window.event.target.selectionStart;
+        //       console.log(window.event.target.selectionStart);
+        //       utils.upDateFromData(val, option.key);
+        //     }
+        //   };
+        // })(),
         ...utils.createEventMap(option, utils),
         placeholder: option.placeholder,
         type: option.subType ? option.subType : "text",
@@ -747,7 +766,7 @@ const ElementCreator = {
       }
     ) => {
       if (eltype in ElementCreator) {
-        const isCallSelf = eltype == "formItemFrame";
+        // const isCallSelf = eltype == "formItemFrame";
         const retChildVnodes: any[] = [];
         const vnodeOptions = options.childrenOptions;
         if (Array.isArray(vnodeOptions) && eltype !== "text") {
@@ -1122,13 +1141,12 @@ const MountMainUtils = function (myThis: any): UT {
         const defaultEvent = eventMap.getDefaultEvent(mainType);
         if (originalEvent == defaultEvent) {
           // @ts-ignore
-          events[mountEvent] = Throttling(50, (val, e) => {
+          events[mountEvent] = (val, e) => {
             if (!option.preventDefaultEvent) {
               utils.upDateFromData(val, option.mountModelValue || option.key);
             } else {
               /* 开启了响应赋值 */
             }
-
             if (option.formElementType == "select") {
               const valueKey = option.optionValueKey || "value";
               const lableKey = option.optionLabelKey || "label";
@@ -1150,7 +1168,7 @@ const MountMainUtils = function (myThis: any): UT {
               return EmitEvent(val, { option: selectItem[0] });
             }
             EmitEvent(val);
-          });
+          };
         } else {
           // @ts-ignore
           events[mountEvent] = EmitEvent;
@@ -1325,9 +1343,9 @@ const MountMainUtils = function (myThis: any): UT {
     const rules: any = null;
     const deleteKeys: string[] = [];
     return {
-      setRules(_rules: any) {
-        // rules = JSON.parse(JSON.stringify(_rules));
-      },
+      // setRules(_rules: any) {
+      //   // rules = JSON.parse(JSON.stringify(_rules));
+      // },
       resetState(key: string, state: boolean) {
         const index = deleteKeys.indexOf(key);
         if (state) {
@@ -1396,7 +1414,7 @@ const MainRender = function () {
       const formOptions = myThis.quickOptions.formOptions || [];
       const depOptions = myThis.depOptions;
       const UTILS = MountMainUtils(myThis);
-      UTILS.rulesState.setRules(myThis.quickOptions.rules);
+      // UTILS.rulesState.setRules(myThis.quickOptions.rules);
       const FromVnode = ElementCreator.formFrame(formOptions, UTILS);
       return FromVnode;
     },

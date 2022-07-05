@@ -165,10 +165,7 @@ export default defineComponent({
         );
 
         nextTick(() => {
-          RegisterIns.setEl(
-            registerInfo.componentName,
-            vnode
-          );
+          RegisterIns.setEl(registerInfo.componentName, vnode);
         });
 
         return vnode;
@@ -191,10 +188,7 @@ export default defineComponent({
           </div>
         );
         nextTick(() => {
-          RegisterIns.setEl(
-            registerInfo.componentName,
-            vnode
-          );
+          RegisterIns.setEl(registerInfo.componentName, vnode);
         });
 
         return vnode;
@@ -217,10 +211,7 @@ export default defineComponent({
           </div>
         );
         nextTick(() => {
-          RegisterIns.setEl(
-            registerInfo.componentName,
-            vnode
-          );
+          RegisterIns.setEl(registerInfo.componentName, vnode);
         });
 
         return vnode;
@@ -250,10 +241,7 @@ export default defineComponent({
           </div>
         );
         nextTick(() => {
-          RegisterIns.setEl(
-            registerInfo.componentName,
-            vnode
-          );
+          RegisterIns.setEl(registerInfo.componentName, vnode);
         });
         return vnode;
       },
@@ -348,7 +336,7 @@ export default defineComponent({
       // 表单配置字段构建规则
       const rule_gen_formitem = {
         formElementLabel: defaultEventTypeForForm.input(
-          "名称",
+          "列名",
           "formElementLabel"
         ),
         key: defaultEventTypeForForm.input("主键", "key"),
@@ -531,21 +519,18 @@ export default defineComponent({
         timer = setInterval(() => {
           if (counter == 20) {
             clearInterval(timer);
-            console.log("注册失败", vnode)
           }
           if (vnode.el) {
             RegisterMap[componentName].target = vnode;
             clearInterval(timer);
-            console.log("注册成功", vnode.el)
           } else {
-            counter++
+            counter++;
           }
-        }, 50)
+        }, 50);
       };
 
       const Render = (renderObject: any) => ({
         render: () => {
-          console.log("開始渲染", renderObject, cache);
           return renderObject.map((info) => {
             if (info.viewType == "shotcut") {
               return elementShotcutGen[info.elementType](
@@ -565,7 +550,7 @@ export default defineComponent({
         },
       });
       const renderVNodeFromElementInfo = (vnodeInfo: any) => {
-        if (!vnodeInfo) return ""
+        if (!vnodeInfo) return "";
         const retVnodeList: any[] = [];
         const viewType = vnodeInfo.viewType;
         const elementType = vnodeInfo.elementType;
@@ -597,7 +582,6 @@ export default defineComponent({
           );
           if (index == -1) return;
           cache[viewType].splice(index, 1);
-          console.log(cache, RegisterMap);
         }
       };
 
@@ -717,12 +701,17 @@ export default defineComponent({
                 // dragSlot.value = [
                 //   elementUtilsGen.tooltip("请首先放置容器元素", "warn"),
                 // ];
-                RootComponent.value = [elementUtilsGen.tooltip("请首先放置容器元素", "warn"),]
+                RootComponent.value = [
+                  elementUtilsGen.tooltip("请首先放置容器元素", "warn"),
+                ];
               } else {
                 // 説明 放在的容器裏
                 // 創建 view-container
                 // 保存根節點
-                RootComponent.value = RegisterIns.register("component", elementType);
+                RootComponent.value = RegisterIns.register(
+                  "component",
+                  elementType
+                );
 
                 // dragSlot.value = RegisterIns.getInfos("component").render();
                 // dragSlot.value = [RegisterIns.renderVNodeFromElementInfo(RootComponent)]
@@ -745,7 +734,7 @@ export default defineComponent({
                   RegisterIns.register("component", "container-view")
                 );
                 // RootComponent.value = RootComponent.value;
-                Ins.$forceUpdate()
+                Ins.$forceUpdate();
                 // RootComponent.value = RegisterIns.renderVNodeFromElementInfo(RootComponent);
                 // dragSlot.value = [
                 //   RegisterIns.renderVNodeFromElementInfo(RootComponent),
