@@ -85,3 +85,17 @@ $fontTitle: 16px;
 .quick-form__fc--default {
     color: #333;
 }
+#app::-webkit-scrollbar-thumb,
+.reset__scrollbar::-webkit-scrollbar-thumb {
+  background-color: #79bbff;
+  border-radius: 8px;
+}
+#app::-webkit-scrollbar,
+.reset__scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+#app::-webkit-scrollbar-track,
+.reset__scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}

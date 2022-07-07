@@ -34,6 +34,9 @@ const dragViewClasses = {
     alignItems: "center",
     padding: "10px 0",
     boxSizing: "border-box",
+    height: "100%",
+    overflow: "hidden",
+    "overflow-y": "auto",
   },
   dragView: {
     display: "flex",
@@ -64,6 +67,10 @@ const dragViewClasses = {
   stateOver: {
     border: "1px solid var(--el-color-success)",
     boxSizing: "border-box",
+  },
+  dragIntro: {
+    padding: "10px",
+    color: "#fff",
   },
 };
 const toolClasses = {
@@ -105,7 +112,9 @@ type Tshotcut =
   | "shotcut-select"
   | "shotcut-radio"
   | "shotcut-checkbox"
-  | "shotcut-textarea";
+  | "shotcut-textarea"
+  | "shotcut-upload"
+  | "shotcut-switch";
 
 type Tcontainer = "container-view";
 
@@ -190,6 +199,8 @@ export default defineComponent({
       "shotcut-radio": elementShotAbstractGen_default,
       "shotcut-checkbox": elementShotAbstractGen_default,
       "shotcut-textarea": elementShotAbstractGen_default,
+      "shotcut-upload": elementShotAbstractGen_default,
+      "shotcut-switch": elementShotAbstractGen_default,
     };
     // 主画布 元素
     const elementComponentGen = {
@@ -327,6 +338,12 @@ export default defineComponent({
             },
             format ? { format } : {}
           ),
+        radios: (name: string, key: string, options: any[]) => ({
+          formElementType: "radio",
+          formElementLabel: name,
+          key,
+          childrenOptions: options,
+        }),
       };
 
       // 表单配置字段构建规则
@@ -373,10 +390,11 @@ export default defineComponent({
         defaultValue: defaultEventTypeForForm.input("默认值", "defaultValue"),
         type: defaultEventTypeForForm.input("元素类型", "type"),
         textValue: defaultEventTypeForForm.input("默认值", "textValue"),
-        multiple: defaultEventTypeForForm.select("是否多选", "multiple", [
-          { label: "是", value: true },
-          { label: "否", value: false },
-        ]),
+        // multiple: defaultEventTypeForForm.select("是否多选", "multiple",
+        //[
+        //   { label: "是", value: true },
+        //   { label: "否", value: false },
+        // ]),
         options: defaultEventTypeForForm.input(
           "选项设置",
           "options",
@@ -425,9 +443,24 @@ export default defineComponent({
             }
           }
         ),
+        action: defaultEventTypeForForm.input(
+          "请求 URL",
+          "action",
+          "请填写请求URL，如果手动填写#"
+        ),
+        multiple: defaultEventTypeForForm.radios("", "multiple", [
+          { label: false, children: ["单选"] },
+          { label: true, children: ["多选"] },
+        ]),
+        listType: defaultEventTypeForForm.select("文件类型", "listType", [
+          { label: "text", value: "text" },
+          { label: "picture", value: "picture" },
+          { label: "picture-card", value: "picture-card" },
+        ]),
       };
       // 表单元素动态 配置项
       const shotview_conifg = {
+        "shotcut-switch": ["formElementType:switch", "formElementLabel", "key"],
         "shotcut-input": [
           "formElementType:input",
           "formElementLabel",
@@ -482,6 +515,27 @@ export default defineComponent({
           "childrenOptions",
           "defaultValue",
           "directives",
+        ],
+        // action: "#",
+        // listType: "picture-card",
+        // autoUpload: false,
+        // children: [
+        //   {
+        //     formElementType: "icon",
+        //     children: ['上传']
+        //   },
+        // ],
+        "shotcut-upload": [
+          "formElementType:upload",
+          "formElementLabel",
+          "key-array",
+          "directives",
+          "action:#",
+          "multiple:true",
+          "defaultValue:false",
+          "autoUpload:false",
+          "listType",
+          "listType:text",
         ],
       };
       // 仓库用于保存 运行时的 format
@@ -588,8 +642,6 @@ export default defineComponent({
       };
     })();
 
-    const dragSlot: Ref<any[]> = ref([]);
-
     let _draging_component_name: string | undefined = "";
     const _overed_components = {
       viewType: "",
@@ -624,18 +676,6 @@ export default defineComponent({
         }),
       };
     })();
-
-    // 表单元素 固定配置项
-    // const formCommonConig = {
-    //   formElementLabel: {
-    //     text: {},
-    //     placeholder: "请输入行名称",
-    //     key: "formElementLabel",
-    //     directives: [],
-    //     // 默认值
-    //     defaultValue: "",
-    //   },
-    // };
 
     const RegisterCache = (() => {
       const counterMap: { TView: number } | {} = {};
@@ -792,6 +832,8 @@ export default defineComponent({
       "shotcut",
     ]);
 
+    // RootComponent.value = [RegisterIns.register("component", "container-view")];
+
     const dragEvent = (() => {
       return (
         elementType: TAtomicts,
@@ -914,17 +956,16 @@ export default defineComponent({
                       const type =
                         handlerFormItemEvent.getCurrentKeyTypes("key");
                       // const defaultValue = handlerFormItemEvent.getCurrentKeyTypes("defaultValue")
-                      console.log(1111, type);
                       FormQuickDataLib[FatherInfo.componentName][config.key] =
                         type == "array"
-                          ? config.defaultValue.split(",")
+                          ? config.defaultValue
+                            ? config.defaultValue.split(",")
+                            : []
                           : config.defaultValue;
-                      console.log(FormQuickDataLib[FatherInfo.componentName]);
                     }
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     //@ts-ignore
                     window.FormQuickDataLib = FormQuickDataLib;
-                    console.log("动态表单配置", config);
                     FormQuickOptionsLib[
                       FatherInfo.componentName
                     ].formOptions.push(config);
@@ -1001,8 +1042,43 @@ export default defineComponent({
               开始/结束编辑
             </el-button>
           </div>
+          <div class={classes.dragIntro}>
+            <p>
+              使用説明:
+              <br />
+              ①创建表单之前需要首先进行页面布局
+              <br />
+              ②拖拽表单元素到布局好的容器中 <br />
+              ③设置表单元素属性 <br />
+              ④表单元素创建完成
+            </p>
+            <p>
+              如何布局： <br />
+              1 拖动【容器】到空白页面 创建根节点 <br />
+              2 拖动【容器】到空白页面创建好的【容器视图】中， 创建子布局
+              <br />3 拖动【容器】到空白页面创建好的【容器视图】中，
+              如果该【容器视图】已经有创建好的子【容器视图】那么该【容器】（拖动中的【容器】）将被创建为兄弟【容器视图】
+            </p>
+            <p>
+              如何创建表单：
+              <br />
+              1 拖动表单元素（目前除了容器 都属于表单元素）至
+              【最上层视图】（最上层视图带有标题）中
+              <br />
+              2 出现配置表单元素的弹窗
+              <br />3 点击确定 创建完成 点击取消 创建取消
+            </p>
+            <p>
+              主要表单属性解释：
+              <br />1 列名 表单的列名 <br />
+              2 主键 该列名对应的key 如 列名为 “姓名” 主键为 "name"
+              <br />3 指令 目前支持的指令为 sif （控制该列的显示与隐藏）格式为
+              【指令】=【表达式】 如： sif = scope.state == 1 && scope.name !==
+              ""。 scope.name 格式为【固定字段】.【主键】
+            </p>
+          </div>
           <div class={classes.dragContent}>
-            <div class={classes.toolbar}>
+            <div class={[classes.toolbar, "reset__scrollbar"]}>
               {createItemShortcut([
                 { elementType: "shotcut-view", title: "容器" },
                 { elementType: "shotcut-input", title: "输入" },
@@ -1012,6 +1088,8 @@ export default defineComponent({
                 { elementType: "shotcut-radio", title: "单选" },
                 { elementType: "shotcut-checkbox", title: "多选" },
                 { elementType: "shotcut-textarea", title: "文本域" },
+                { elementType: "shotcut-upload", title: "上传" },
+                { elementType: "shotcut-switch", title: "开关" },
               ])}
             </div>
             <div

@@ -720,6 +720,7 @@ const ElementCreator = {
     );
   },
   formItemFrame: (option: fromItemMergeType, utils: UT, index): any => {
+    if (!option.formElementType) return "";
     const formElementType = option.formElementType || "container";
     const formElementLabel = option.formElementLabel;
     const key = option.key;
