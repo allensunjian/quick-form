@@ -44,7 +44,7 @@ export default defineComponent({
       QuickForm=${option}
       `;
     };
-    const fullDemoCode = function (drag: boolean) {
+    const fullDemoCode = function (drag: boolean, edit: boolean) {
       return `
       FromData.value = {
         account: "",
@@ -178,6 +178,7 @@ export default defineComponent({
       labelPosition: "right",
     },
         drag: ${drag},
+        edit: ${edit}
       };
       
       `;
@@ -185,7 +186,7 @@ export default defineComponent({
     const ins: any = getCurrentInstance();
 
     const State = reactive({
-      RefCode: fullDemoCode(false),
+      RefCode: fullDemoCode(false, false),
       inputCode: `
         FromData.value = {
           inputValue1: "",
@@ -225,7 +226,7 @@ export default defineComponent({
             labelWidth: 100,
             size: "default",
             labelPosition: "right",
-          },
+          }
         }
       `,
       btnCode: `
@@ -376,17 +377,17 @@ export default defineComponent({
           labelWidth: 100,
           size: "default",
           labelPosition: "right",
-        },
+        }
       }
       `,
-      dragDemo: fullDemoCode(false),
+      dragDemo: fullDemoCode(false, false),
       dragCompilte: false,
     });
     let CurrentDragCode: any = "";
     const Event = {
       toDrag: () => {
         State.dragCompilte = true;
-        State.dragDemo = fullDemoCode(true);
+        State.dragDemo = fullDemoCode(true, false);
       },
       compilte: () => {
         State.dragDemo = CurrentDragCode;
@@ -396,6 +397,10 @@ export default defineComponent({
         CurrentDragCode = JSON.parse(val);
         CurrentDragCode.drag = false;
         CurrentDragCode = createCodeFormData(JSON.stringify(CurrentDragCode));
+      },
+      edit() {
+        console.log("编辑表单");
+        State.dragDemo = fullDemoCode(false, true);
       },
     };
     // setInterval(() => {
@@ -438,15 +443,20 @@ export default defineComponent({
             onCodeChange={Event.codeChange}
           >
             <div class={classes.controll_warp}>
-              {!State.dragCompilte ? (
-                <el-button type="primary" onClick={Event.toDrag}>
-                  拖拽表单
-                </el-button>
-              ) : (
-                <el-button type="primary" onClick={Event.compilte}>
-                  拖拽完成
-                </el-button>
-              )}
+              {[
+                !State.dragCompilte ? (
+                  <el-button type="primary" onClick={Event.toDrag}>
+                    拖拽表单
+                  </el-button>
+                ) : (
+                  <el-button type="primary" onClick={Event.compilte}>
+                    拖拽完成
+                  </el-button>
+                ),
+                <el-button type="primary" onClick={Event.edit}>
+                  编辑表单
+                </el-button>,
+              ]}
             </div>
           </CodeView>
           <DragLayout></DragLayout>

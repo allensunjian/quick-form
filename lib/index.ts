@@ -761,6 +761,7 @@ const ElementCreator = {
         GetCombinationType: any;
         GetLayout?: IFunction<LayoutType>;
         GetDrag?: IFunction<boolean>;
+        GetEditOption?: IFunction<boolean>;
         upDateFromData?: IFunction<void>;
         getMountModelValue?: IFunction<any>;
         createElementDeep?: IFunction<any[]>;
@@ -827,10 +828,62 @@ const ElementCreator = {
             label: utils.parseTempSyntax(formElementLabel),
             ...handleProps,
           },
-          utils.GetDrag() ? { class: "el-form-item__drag" } : {}
+          {
+            class: `${utils.GetDrag() ? "el-form-item__drag" : ""} ${
+              utils.GetEditOption() ? "el-form-item__edit" : ""
+            }`,
+          }
         ),
         () => [
           GetItemChildren(getTypes.mainType, { ...option, ...getTypes }, utils),
+          utils.GetEditOption()
+            ? h(
+                "div",
+                {
+                  class: "edit__tools",
+                },
+                [
+                  h(
+                    ElButton,
+                    {
+                      type: "danger",
+                      size: "small",
+                      onClick() {
+                        utils.emitEvent(
+                          "formEvent",
+                          ""
+                        )({
+                          type: "delete_option",
+                          resouce: utils.scope.quickOptions.formOptions,
+                          value: option,
+                          pos: index,
+                        });
+                      },
+                    },
+                    () => ["删除"]
+                  ),
+                  h(
+                    ElButton,
+                    {
+                      type: "primary",
+                      size: "small",
+                      onClick() {
+                        utils.emitEvent(
+                          "formEvent",
+                          ""
+                        )({
+                          type: "edit_option",
+                          resouce: utils.scope.quickOptions.formOptions,
+                          value: option,
+                          pos: index,
+                        });
+                      },
+                    },
+                    () => ["编辑"]
+                  ),
+                ]
+              )
+            : "",
         ]
       ),
       option,
@@ -1196,6 +1249,10 @@ const MountMainUtils = function (myThis: any): UT {
     return Boolean(myThis.quickOptions.drag);
   };
 
+  const GetEditOption = (): boolean => {
+    return Boolean(myThis.quickOptions.edit);
+  };
+
   const upDateFromData = (val: any, key: string) => {
     if (key in myThis.formData) {
       if (val instanceof Event) return;
@@ -1401,6 +1458,7 @@ const MountMainUtils = function (myThis: any): UT {
   _UTILS.GetCombinationType = GetCombinationType;
   _UTILS.GetLayout = GetLayout;
   _UTILS.GetDrag = GetDrag;
+  _UTILS.GetEditOption = GetEditOption;
   _UTILS.upDateFromData = upDateFromData;
   _UTILS.getMountModelValue = getMountModelValue;
   _UTILS.createElementDeep = createElementDeep;

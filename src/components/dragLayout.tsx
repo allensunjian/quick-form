@@ -1,3 +1,4 @@
+import { componentSizes } from "element-plus";
 import {
   defineComponent,
   ref,
@@ -239,10 +240,13 @@ export default defineComponent({
         size: "default",
         labelPosition: "right",
       },
+      edit: true,
     };
     const FormQuickOptionsLib = reactive({});
 
     const FormQuickDataLib = reactive({});
+
+    const FormQuickEventLisb = {};
     // 自定义事件
     const handleElementGen = {
       getQuickForm: function (registerInfo: any) {
@@ -253,6 +257,36 @@ export default defineComponent({
         }
         if (!FormQuickDataLib[registerInfo.componentName]) {
           FormQuickDataLib[registerInfo.componentName] = {};
+        }
+        if (!FormQuickEventLisb[registerInfo.componentName]) {
+          FormQuickEventLisb[registerInfo.componentName] = {
+            FormChange: (e) => {
+              //
+            },
+            FormEvent: (e) => {
+              if (!e.key && e.val.type == "delete_option") {
+                const index = e.val.pos;
+                const resouce = e.val.resouce;
+                const option = e.val.value;
+                const key = option.key;
+                resouce.splice(index, 1);
+                if (
+                  FormQuickDataLib[registerInfo.componentName][key] !==
+                  undefined
+                ) {
+                  delete FormQuickDataLib[registerInfo.componentName][key];
+                }
+              }
+
+              if (!e.key && e.val.type == "edit_option") {
+                const index = e.val.pos;
+                const resouce = e.val.resouce;
+                const option = e.val.value;
+                const key = option.key;
+                handlerFormItemEvent.parseCurrentFormOptions(option);
+              }
+            },
+          };
         }
         const form: any = h("div", { class: "dragFormWrap" }, [
           h(
@@ -267,6 +301,10 @@ export default defineComponent({
             ref: registerInfo.componentName,
             formData: FormQuickDataLib[registerInfo.componentName],
             quickOptions: FormQuickOptionsLib[registerInfo.componentName],
+            onFormEvent:
+              FormQuickEventLisb[registerInfo.componentName].FormEvent,
+            onFormChange:
+              FormQuickOptionsLib[registerInfo.componentName].FormChange,
           }),
         ]);
         return form;
@@ -314,7 +352,7 @@ export default defineComponent({
         ) =>
           Object.assign(
             {
-              formElementLabel: name,
+              formElementLabel: name || "input",
               key,
               placeholder: placeholder ? placeholder : "请输入" + name,
               formElementType: "input",
@@ -329,7 +367,7 @@ export default defineComponent({
         ) =>
           Object.assign(
             {
-              formElementLabel: name,
+              formElementLabel: name || "select",
               key,
               // placeholder: placeholder ? placeholder : "请输入" + name,
               placeholder: "请选择",
@@ -340,7 +378,7 @@ export default defineComponent({
           ),
         radios: (name: string, key: string, options: any[]) => ({
           formElementType: "radio",
-          formElementLabel: name,
+          formElementLabel: name || "radio",
           key,
           childrenOptions: options,
         }),
@@ -375,7 +413,6 @@ export default defineComponent({
               console.error("quick-form 表单指令格式错误", error);
               ret = "";
             }
-            console.log(ret);
             return ret;
           }
         ),
@@ -567,7 +604,6 @@ export default defineComponent({
             );
             return {};
           } else if (keyAndVal.length == 3) {
-            console.log(keyAndVal);
             FormItemState.formItemData[
               keyAndVal[0]
             ] = `${keyAndVal[1]}:${keyAndVal[2]}`;
@@ -599,13 +635,17 @@ export default defineComponent({
         currentValueFormat = {};
       };
 
+      const parseCurrentFormOptions = (options: any) => {
+        console.log(options);
+      };
+
       let currentElementInfo: any = null;
       let _reslove: any = null;
       let _reject: any = null;
 
       return {
+        parseCurrentFormOptions,
         getCurrentKeyTypes: (key: string) => {
-          console.log(currentKeyTypes);
           return currentKeyTypes[key];
         },
         clearCurrentKeyTypes: () => (currentKeyTypes = {}),
@@ -683,6 +723,8 @@ export default defineComponent({
       const cache = {};
       // 映射了 dom信息
       const RegisterMap = {};
+      // view层的子父映射关系
+      const cacheViewPostionMap = {};
       let defaultKeys: TView[] = [];
       const createElementInfo = (
         viewType: TView,
@@ -704,8 +746,8 @@ export default defineComponent({
         };
       };
 
-      const getRegisterInfo = (componentName: string) => {
-        return RegisterMap[componentName];
+      const getRegisterInfo = (componentName?: string) => {
+        return !componentName ? RegisterMap : RegisterMap[componentName];
       };
 
       const setEl = (componentName: string, vnode: any) => {
@@ -722,6 +764,36 @@ export default defineComponent({
             counter++;
           }
         }, 50);
+      };
+
+      const swap = (name1, name2) => {
+        return new Promise((resolve, reject) => {
+          try {
+            const parentPosition1 = cacheViewPostionMap[name1];
+            const parentPosition2 = cacheViewPostionMap[name2];
+
+            const parentInfo1 = RegisterMap[parentPosition1].children;
+            const parentInfo2 = RegisterMap[parentPosition2].children;
+
+            const name1_postion = parentInfo1.findIndex(
+              (o) => o.componentName == name1
+            );
+            const name2_postion = parentInfo2.findIndex(
+              (o) => o.componentName == name2
+            );
+            const name1_target = parentInfo1.splice(
+              name1_postion,
+              1,
+              parentInfo2[name2_postion]
+            );
+            parentInfo2.splice(name2_postion, 1, name1_target[0]);
+            cacheViewPostionMap[name1] = parentPosition2;
+            cacheViewPostionMap[name2] = parentPosition1;
+            resolve(1);
+          } catch (error) {
+            reject(0);
+          }
+        });
       };
 
       const Render = (renderObject: any) => ({
@@ -785,12 +857,29 @@ export default defineComponent({
         }
       };
 
+      class Factor {
+        constructor(Obj: {}) {
+          Object.keys(Obj).forEach((key) => (this[key] = Obj[key]));
+        }
+        setPosition(parentName: string | null | undefined) {
+          const myThis: any = this;
+          if (!parentName) {
+            // 挂在到page 作为根节点
+            parentName = "page";
+          }
+          const childName = myThis.componentName;
+          cacheViewPostionMap[childName] = parentName;
+          return this;
+        }
+      }
+
       const register = (
         viewType: TView,
         elementType: TAtomicts,
         title?: string
       ) => {
         let ret: any = {};
+
         if (defaultKeys.indexOf(viewType) >= 0) {
           // 注冊
           counterMap[viewType]++;
@@ -802,7 +891,7 @@ export default defineComponent({
             title
           );
           cache[viewType].push(vnodeInfo);
-          RegisterMap[vnodeInfo.componentName] = ret = vnodeInfo;
+          RegisterMap[vnodeInfo.componentName] = ret = new Factor(vnodeInfo);
         }
         return ret;
       };
@@ -819,6 +908,7 @@ export default defineComponent({
           getRegisterInfo,
           renderVNodeFromElementInfo,
           remove,
+          swap,
         };
       };
       return {
@@ -864,12 +954,11 @@ export default defineComponent({
           if (componentName) {
             _draging_component_name = componentName;
           }
+          e.stopPropagation();
           // return e.preventDefault();
         });
         const dragleave = registerToCache("dragleave", (e) => {
           elementState.setDefault();
-          console.log("leave", componentName);
-          //
           e.stopPropagation();
           return e.preventDefault();
         });
@@ -904,9 +993,6 @@ export default defineComponent({
               // 拖拽到容器中的是 快捷
               // 快捷 只有容器类型可被首次创建
               if (currentDraggingElement.elementType !== "shotcut-view") {
-                // dragSlot.value = [
-                //   elementUtilsGen.tooltip("请首先放置容器元素", "warn"),
-                // ];
                 RootComponent.value = {
                   viewType: "utils",
                   elementType: "utils-tooltip",
@@ -919,7 +1005,8 @@ export default defineComponent({
                 RootComponent.value = RegisterIns.register(
                   "component",
                   elementType
-                );
+                ).setPosition();
+                // RegisterIns.setRegisterPostionMap();
                 // dragSlot.value = RegisterIns.getInfos("component").render();
                 // dragSlot.value = [RegisterIns.renderVNodeFromElementInfo(RootComponent)]
               }
@@ -938,7 +1025,10 @@ export default defineComponent({
                 FatherInfo.children.push(
                   // 這裏先寫死
                   // 需要 動態 根據 shotcut類型來創建 注冊類型
-                  RegisterIns.register("component", "container-view")
+                  RegisterIns.register(
+                    "component",
+                    "container-view"
+                  ).setPosition(FatherInfo.componentName)
                 );
                 // RootComponent.value = RootComponent.value;
                 Ins.$forceUpdate();
@@ -950,7 +1040,6 @@ export default defineComponent({
                 handlerFormItemEvent
                   .genConifgForm(childInfo.elementType)
                   .then((config: any) => {
-                    console.log(config);
                     // 设置动态依赖
                     if (config.key) {
                       const type =
@@ -978,6 +1067,16 @@ export default defineComponent({
               }
             } else {
               //其他情況 如 容器内的子容器互換位置等
+              RegisterIns.swap(
+                _draging_component_name,
+                _overed_components.componentName
+              )
+                .then(() => {
+                  Ins.$forceUpdate();
+                })
+                .catch(() => {
+                  console.log("交换失败， 不要与根节点交换");
+                });
             }
           }
 

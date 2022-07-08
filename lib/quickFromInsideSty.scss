@@ -35,6 +35,39 @@
    border: 1px dashed #ddd;
    z-index: 999;
 }
+.el-form-item {
+    box-sizing: border-box;
+}
+.edit__tools {
+    display: none;
+}
+.el-form-item__edit {
+    position: relative;
+}
+.el-form-item__edit:hover .edit__tools {
+    display: block;
+}
+.el-form-item__edit:hover::before{
+    border: 4px solid var(--el-menu-active-color);
+}
+.el-form-item__edit::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border:1px dashed #ddd;
+    box-sizing: border-box;
+    padding: 4px;
+    z-index: 10;
+    cursor: pointer;
+    background: rgba(255,255,255, 0.6);
+}
+.edit__tools {
+    width: 100%;
+    position: absolute;
+    text-align: center;
+    z-index: 10;
+}
 .quick-form__state--drag_here {
    border-top: 4px solid #1989fa
 }
