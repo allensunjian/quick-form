@@ -1,4 +1,4 @@
-import { componentSizes } from "element-plus";
+import { componentSizes, ElButton } from "element-plus";
 import {
   defineComponent,
   ref,
@@ -240,7 +240,7 @@ export default defineComponent({
         size: "default",
         labelPosition: "right",
       },
-      edit: true,
+      edit: false,
     };
     const FormQuickOptionsLib = reactive({});
 
@@ -283,7 +283,11 @@ export default defineComponent({
                 const resouce = e.val.resouce;
                 const option = e.val.value;
                 const key = option.key;
-                handlerFormItemEvent.parseCurrentFormOptions(option);
+
+                handlerFormItemEvent.parseCurrentFormOptions(
+                  option,
+                  registerInfo.componentName
+                );
               }
             },
           };
@@ -295,7 +299,34 @@ export default defineComponent({
               class:
                 "quick-form__state--align--center quick-form__state--mb--20 quick-form__fc--default",
             },
-            [`表单${registerInfo.componentName}`]
+            [
+              `表单${registerInfo.componentName}`,
+              h(
+                ElButton,
+                {
+                  style: "float: right",
+                  type: `${
+                    FormQuickOptionsLib[registerInfo.componentName].edit
+                      ? "success"
+                      : "primary"
+                  }`,
+                  size: "small",
+                  onClick: () => {
+                    const currentEdit =
+                      FormQuickOptionsLib[registerInfo.componentName].edit;
+                    FormQuickOptionsLib[registerInfo.componentName].edit =
+                      !currentEdit;
+                  },
+                },
+                () => [
+                  `${
+                    FormQuickOptionsLib[registerInfo.componentName].edit
+                      ? "保存"
+                      : "编辑"
+                  }`,
+                ]
+              ),
+            ]
           ),
           h(QuickForm, {
             ref: registerInfo.componentName,
@@ -338,6 +369,18 @@ export default defineComponent({
 
     // 表单元素配置事件
     const showConfig = ref(false);
+
+    enum ViewConifgEnum {
+      "input" = "shotcut-input",
+      "switch" = "shotcut-switch",
+      "textarea" = "shotcut-textarea",
+      "button" = "shotcut-button",
+      "text" = "shotcut-text",
+      "select" = "shotcut-select",
+      "radio" = "shotcut-radio",
+      "checkbox" = "shotcut-checkbox",
+      "upload" = "shotcut-upload",
+    }
     const handlerFormItemEvent = (() => {
       const FormItemState = reactive({
         formItemData: {},
@@ -553,15 +596,6 @@ export default defineComponent({
           "defaultValue",
           "directives",
         ],
-        // action: "#",
-        // listType: "picture-card",
-        // autoUpload: false,
-        // children: [
-        //   {
-        //     formElementType: "icon",
-        //     children: ['上传']
-        //   },
-        // ],
         "shotcut-upload": [
           "formElementType:upload",
           "formElementLabel",
@@ -635,8 +669,16 @@ export default defineComponent({
         currentValueFormat = {};
       };
 
-      const parseCurrentFormOptions = (options: any) => {
-        console.log(options);
+      const parseCurrentFormOptions = (options: any, componentName: string) => {
+        const type = options.formElementType;
+        handlerFormItemEvent
+          .genConifgForm(ViewConifgEnum[type], options)
+          .then((config) => {
+            // console.log(config);
+            Object.keys(config as {}).forEach((key) => {
+              options[key] = (config as {})[key];
+            });
+          });
       };
 
       let currentElementInfo: any = null;
@@ -649,13 +691,18 @@ export default defineComponent({
           return currentKeyTypes[key];
         },
         clearCurrentKeyTypes: () => (currentKeyTypes = {}),
-        genConifgForm(info: any) {
-          currentElementInfo = info;
-          FormItemState.titleType = currentElementInfo;
-          const FromConfig = createConigForShotview(
-            shotview_conifg[currentElementInfo]
-          );
-          configQuickForm.formOptions = FromConfig;
+        genConifgForm(info: any, defaultInfo?: {}) {
+          if (defaultInfo) {
+            FormItemState.formItemData = copy(defaultInfo);
+          } else {
+            currentElementInfo = info;
+            FormItemState.titleType = currentElementInfo;
+            const FromConfig = createConigForShotview(
+              shotview_conifg[currentElementInfo]
+            );
+            configQuickForm.formOptions = FromConfig;
+          }
+
           showConfig.value = true;
           return new Promise((resolve, reject) => {
             _reslove = resolve;
@@ -1040,6 +1087,7 @@ export default defineComponent({
                 handlerFormItemEvent
                   .genConifgForm(childInfo.elementType)
                   .then((config: any) => {
+                    console.log(config);
                     // 设置动态依赖
                     if (config.key) {
                       const type =
