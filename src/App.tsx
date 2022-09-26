@@ -1,9 +1,10 @@
-import { defineComponent, reactive, getCurrentInstance } from "vue";
+import { defineComponent, reactive, getCurrentInstance, h } from "vue";
 import MonacoEditor from "./components/MonacoEditor";
 import CodeParser from "./components/codeParser";
 import Header from "./components/header";
 import CodeView from "./components/codeView";
 import DragLayout from "./components/dragLayout";
+
 const appClasses = {
   quickWrap: {
     width: "1400px",
@@ -406,10 +407,67 @@ export default defineComponent({
     // setInterval(() => {
     //   State.RefCode += 1;
     // }, 1000);
+    // const FromData = reactive({
+    //   daterange: ["2022-01-01", "2022-10-10"],
+    // });
+    // const QuickForm = {
+    //   formOptions: [
+    //     {
+    //       formElementType: "container",
+    //       childrenOptions: [
+    //         { children: ["线索获取"], formElementType: "container" },
+    //         {
+    //           formElementType: "date",
+    //           format: "YYYY-MM-DD",
+    //           key: "daterange",
+    //           placeholder: "",
+    //           type: "daterange",
+    //           valueFormat: "YYYY-MM-DD",
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       tirrgerEvents: ["click"],
+    //       formElementType: "button",
+    //       children: ["點擊"],
+    //       type: "primary",
+    //       key: "add",
+    //     },
+    //   ],
+    //   layout: {
+    //     labelWidth: 100,
+    //     size: "default",
+    //     labelPosition: "right",
+    //   },
+    //   config: {
+    //     renderType: "hander",
+    //     containerVnode: h("div", {
+    //       class: ["handler--container"],
+    //     }),
+    //     itemVnode: h("div", {
+    //       class: ["handle--item"],
+    //     }),
+    //   },
+    // };
+    // const FormEvent = (params) => {
+    //   console.log("event", params);
+    // };
+    // const FormChange = (params) => {
+    //   console.log("change", params);
+    // };
     return () => {
       return (
         <div class={classes.quickWrap}>
           <Header></Header>
+          {/* <div>
+            <quick-form
+              form-data={FromData}
+              quickOptions={QuickForm}
+              onFormEvent={FormEvent}
+              onFormChange={FormChange}
+            ></quick-form>
+          </div> */}
+
           <CodeView
             height={300}
             code={State.inputCode}

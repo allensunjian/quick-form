@@ -87,6 +87,13 @@ type ReturnCombType = {
 type LayoutType = {
   labelWidth?: number;
 };
+
+type TRenderType = "form" | "hander";
+type TConfig = {
+  renderType?: TRenderType;
+  containerVnode: any;
+  itemVnode: any;
+};
 type eventMapType = {
   getEvents: IFunction<any>;
   getDefaultEvent: IFunction<any>;
@@ -121,6 +128,7 @@ type UT = {
   createEventMap: IFunction<IObject>;
   GetCombinationType: IFunction<ReturnCombType>;
   GetLayout: IFunction<LayoutType>;
+  GetConfig: IFunction<TConfig>;
   upDateFromData: IFunction<void>;
   getMountModelValue: IFunction<any>;
   createElementDeep: IFunction<any[]>;
@@ -492,6 +500,9 @@ const ElementCreator = {
       h(
         ElUpload,
         {
+          onHttpRequest: (file) => {
+            console.log(file);
+          },
           ...mountObject,
           accept: _accept,
         },
@@ -683,20 +694,41 @@ const ElementCreator = {
   button: (options: fromItemMergeType, utils: UT) => {
     const handleProps = utils.clearHandleProps(options);
     return utils.parseDirective(
-      h(ElButton, handleProps, () => utils.createElementDeep(options)),
+      h(
+        ElButton,
+        {
+          ...handleProps,
+          onClick: () => utils.emitEvent("formEvent", options.key)(),
+        },
+        () => utils.createElementDeep(options)
+      ),
       options,
       utils
     );
   },
-  formFrame: (options: Array<fromItemMergeType>, utils: UT) => {
+  formFrame: (
+    options: Array<fromItemMergeType>,
+    utils: UT,
+    handerConfig?: TConfig
+  ) => {
     const FormChildren: any[] = [];
-    // utils.scope._formData = JSON.parse(JSON.stringify(utils.scope.formData));
+    let FormContainer: any = null;
+    let ItemWarp: any = undefined;
+    if (handerConfig) {
+      FormContainer = handerConfig.containerVnode;
+      ItemWarp = handerConfig.itemVnode;
+    } else {
+      FormContainer = ElForm;
+    }
+
     const Layout = utils.GetLayout();
     options.forEach((item, index) => {
-      FormChildren.push(ElementCreator.formItemFrame(item, utils, index));
+      FormChildren.push(
+        ElementCreator.formItemFrame(item, utils, index, ItemWarp)
+      );
     });
     return h(
-      ElForm,
+      FormContainer,
       {
         // onselectstart: () => {
         //   return false;
@@ -707,19 +739,28 @@ const ElementCreator = {
         // validateOnRuleChange: false,
         ...Layout,
       },
-      () =>
-        FormChildren.length == 0
-          ? h(
-              "div",
-              {
-                class: "quick-form__state--align--center quick-form__fc--light",
-              },
-              ["请设置表单元素"]
-            )
-          : FormChildren
+      // FormChildren
+      ItemWarp
+        ? FormChildren
+        : () =>
+            FormChildren.length == 0
+              ? h(
+                  "div",
+                  {
+                    class:
+                      "quick-form__state--align--center quick-form__fc--light",
+                  },
+                  ["请设置表单元素"]
+                )
+              : FormChildren
     );
   },
-  formItemFrame: (option: fromItemMergeType, utils: UT, index): any => {
+  formItemFrame: (
+    option: fromItemMergeType,
+    utils: UT,
+    index,
+    itemWarp?: any
+  ): any => {
     if (!option.formElementType) return "";
     const formElementType = option.formElementType || "container";
     const formElementLabel = option.formElementLabel;
@@ -820,7 +861,7 @@ const ElementCreator = {
     };
     return utils.parseDirective(
       h(
-        ElFormItem,
+        itemWarp || ElFormItem,
         mergeHandlerProps(
           {
             ...mountDrag(utils, index),
@@ -834,57 +875,69 @@ const ElementCreator = {
             }`,
           }
         ),
-        () => [
-          GetItemChildren(getTypes.mainType, { ...option, ...getTypes }, utils),
-          utils.GetEditOption()
-            ? h(
-                "div",
-                {
-                  class: "edit__tools",
-                },
-                [
-                  h(
-                    ElButton,
+        itemWarp
+          ? [
+              GetItemChildren(
+                getTypes.mainType,
+                { ...option, ...getTypes },
+                utils
+              ),
+            ]
+          : () => [
+              GetItemChildren(
+                getTypes.mainType,
+                { ...option, ...getTypes },
+                utils
+              ),
+              utils.GetEditOption()
+                ? h(
+                    "div",
                     {
-                      type: "danger",
-                      size: "small",
-                      onClick() {
-                        utils.emitEvent(
-                          "formEvent",
-                          ""
-                        )({
-                          type: "delete_option",
-                          resouce: utils.scope.quickOptions.formOptions,
-                          value: option,
-                          pos: index,
-                        });
-                      },
+                      class: "edit__tools",
                     },
-                    () => ["删除"]
-                  ),
-                  h(
-                    ElButton,
-                    {
-                      type: "primary",
-                      size: "small",
-                      onClick() {
-                        utils.emitEvent(
-                          "formEvent",
-                          ""
-                        )({
-                          type: "edit_option",
-                          resouce: utils.scope.quickOptions.formOptions,
-                          value: option,
-                          pos: index,
-                        });
-                      },
-                    },
-                    () => ["编辑"]
-                  ),
-                ]
-              )
-            : "",
-        ]
+                    [
+                      h(
+                        ElButton,
+                        {
+                          type: "danger",
+                          size: "small",
+                          onClick() {
+                            utils.emitEvent(
+                              "formEvent",
+                              ""
+                            )({
+                              type: "delete_option",
+                              resouce: utils.scope.quickOptions.formOptions,
+                              value: option,
+                              pos: index,
+                            });
+                          },
+                        },
+                        () => ["删除"]
+                      ),
+                      h(
+                        ElButton,
+                        {
+                          type: "primary",
+                          size: "small",
+                          onClick() {
+                            utils.emitEvent(
+                              "formEvent",
+                              ""
+                            )({
+                              type: "edit_option",
+                              resouce: utils.scope.quickOptions.formOptions,
+                              value: option,
+                              pos: index,
+                            });
+                          },
+                        },
+                        () => ["编辑"]
+                      ),
+                    ]
+                  )
+                : "",
+            ]
       ),
       option,
       utils
@@ -1244,6 +1297,9 @@ const MountMainUtils = function (myThis: any): UT {
   const GetLayout = (): LayoutType => {
     return myThis.quickOptions.layout;
   };
+  const GetConfig = (): TConfig => {
+    return myThis.quickOptions.conifg;
+  };
 
   const GetDrag = (): boolean => {
     return Boolean(myThis.quickOptions.drag);
@@ -1346,10 +1402,13 @@ const MountMainUtils = function (myThis: any): UT {
     const createPorps = props.reduce((ref, cur, index) => {
       try {
         // @ts-ignore
-        ref[cur.prop] = {
-          ..._UTILS.scope.formData,
-          ..._UTILS.scope.depOptions,
-        }[cur.value];
+        ref[cur.prop] =
+          cur.type == "self"
+            ? cur.value
+            : {
+                ..._UTILS.scope.formData,
+                ..._UTILS.scope.depOptions,
+              }[cur.value];
       } catch (error) {
         console.log(error);
       }
@@ -1457,6 +1516,7 @@ const MountMainUtils = function (myThis: any): UT {
   _UTILS.createEventMap = createEventMap;
   _UTILS.GetCombinationType = GetCombinationType;
   _UTILS.GetLayout = GetLayout;
+  _UTILS.GetConfig = GetConfig;
   _UTILS.GetDrag = GetDrag;
   _UTILS.GetEditOption = GetEditOption;
   _UTILS.upDateFromData = upDateFromData;
@@ -1480,10 +1540,23 @@ const MainRender = function () {
     render() {
       const myThis = this as any;
       const formOptions = myThis.quickOptions.formOptions || [];
+      const config: TConfig = myThis.quickOptions.config;
       const depOptions = myThis.depOptions;
       const UTILS = MountMainUtils(myThis);
+      let isHander = false;
       // UTILS.rulesState.setRules(myThis.quickOptions.rules);
-      const FromVnode = ElementCreator.formFrame(formOptions, UTILS);
+      if (
+        config &&
+        config.renderType == "hander" &&
+        config.containerVnode &&
+        config.itemVnode
+      )
+        isHander = true;
+      const FromVnode = ElementCreator.formFrame(
+        formOptions,
+        UTILS,
+        isHander ? config : undefined
+      );
       return FromVnode;
     },
   };
